@@ -1,2 +1,3 @@
 # Git Practice
 This is my first Git practice repo.
+THis is a third line to the file...
