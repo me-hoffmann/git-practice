@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=680">
+    <title>Fred Rogers, Terrorist — Point & Click Adventure</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div id="game-container">
+    <!-- Title Bar -->
+    <div id="title-bar">
+        <button class="menu-toggle" id="menu-btn">Menu</button>
+        <span class="title-text">Fred Rogers, Terrorist</span>
+        <span style="width:40px"></span>
+    </div>
+
+    <!-- Scene Area -->
+    <div id="scene-wrapper">
+        <div id="room-name-overlay"></div>
+        <canvas id="scene-canvas" width="640" height="400"></canvas>
+        <div id="transition-overlay"></div>
+        <!-- Dialogue box gets inserted here -->
+        <div id="dialogue-container"></div>
+        <!-- Combat overlay gets inserted here -->
+        <div id="combat-container"></div>
+        <!-- Game over overlay -->
+        <div id="game-over-overlay" class="hidden"></div>
+    </div>
+
+    <!-- Status Bar -->
+    <div id="status-bar"></div>
+
+    <!-- Lower Panel: Verbs + Inventory -->
+    <div id="lower-panel">
+        <div id="verb-panel"></div>
+        <div id="inventory-bar"></div>
+    </div>
+
+    <!-- Message Log -->
+    <div id="message-log"></div>
+</div>
+
+<!-- Game Menu (overlay) -->
+<div id="game-menu"></div>
+
+<!-- ===========================================
+     SCRIPT LOADING ORDER
+     =========================================== -->
+
+<!-- Engine -->
+<script src="engine/EventBus.js"></script>
+<script src="engine/GameState.js"></script>
+<script src="engine/SceneRenderer.js"></script>
+<script src="engine/VerbSystem.js"></script>
+<script src="engine/InputManager.js"></script>
+<script src="engine/CommandExecutor.js"></script>
+<script src="engine/DialogueManager.js"></script>
+<script src="engine/CombatManager.js"></script>
+<script src="engine/TransitionManager.js"></script>
+<script src="engine/SaveManager.js"></script>
+
+<!-- Data (must load after engine, before UI) -->
+<script src="data/constants.js"></script>
+<script src="data/items.js"></script>
+<script src="data/characters.js"></script>
+<script src="data/rooms.js"></script>
+<script src="data/dialogues.js"></script>
+<script src="data/scripts.js"></script>
+
+<!-- UI -->
+<script src="ui/VerbPanel.js"></script>
+<script src="ui/InventoryBar.js"></script>
+<script src="ui/StatusBar.js"></script>
+<script src="ui/MessageLog.js"></script>
+<script src="ui/DialogueBox.js"></script>
+<script src="ui/CombatOverlay.js"></script>
+<script src="ui/CursorManager.js"></script>
+<script src="ui/GameMenu.js"></script>
+
+<!-- Main Entry Point -->
+<script src="main.js"></script>
+
+</body>
+</html>

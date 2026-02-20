@@ -1,0 +1,730 @@
+/**
+ * Fred Rogers, Terrorist v2 - Point & Click Adventure
+ * Stylesheet
+ */
+
+/* ============================================
+   RESET & BASE
+   ============================================ */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    background: #2c2c2c;
+    color: #e0e0e0;
+    font-family: 'Chicago', 'Monaco', 'Courier New', monospace;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    overflow: hidden;
+}
+
+/* ============================================
+   GAME CONTAINER
+   ============================================ */
+#game-container {
+    width: 680px;
+    background: #1a1a1a;
+    border: 3px solid #666;
+    border-radius: 4px;
+    box-shadow: 0 0 30px rgba(0,0,0,0.8);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* Title bar */
+#title-bar {
+    background: linear-gradient(to bottom, #999, #666);
+    color: #000;
+    font-size: 12px;
+    font-weight: bold;
+    text-align: center;
+    padding: 3px 0;
+    border-bottom: 1px solid #444;
+    cursor: default;
+    user-select: none;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 3px 8px;
+}
+
+#title-bar .title-text {
+    flex: 1;
+    text-align: center;
+}
+
+#title-bar .menu-toggle {
+    background: none;
+    border: 1px solid #444;
+    color: #000;
+    font-family: inherit;
+    font-size: 11px;
+    padding: 1px 6px;
+    cursor: pointer;
+    border-radius: 2px;
+}
+
+#title-bar .menu-toggle:hover {
+    background: rgba(255,255,255,0.3);
+}
+
+/* ============================================
+   SCENE CANVAS
+   ============================================ */
+#scene-wrapper {
+    position: relative;
+    width: 100%;
+    background: #000;
+}
+
+#scene-canvas {
+    display: block;
+    width: 640px;
+    height: 400px;
+    margin: 0 auto;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+}
+
+/* Room name overlay */
+#room-name-overlay {
+    position: absolute;
+    top: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.7);
+    color: #fff;
+    padding: 2px 12px;
+    font-size: 12px;
+    border-radius: 3px;
+    pointer-events: none;
+    z-index: 5;
+}
+
+/* ============================================
+   STATUS BAR
+   ============================================ */
+.status-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 4px 10px;
+    background: #333;
+    border-top: 1px solid #555;
+    border-bottom: 1px solid #555;
+    font-size: 12px;
+    height: 28px;
+    gap: 12px;
+}
+
+.status-label {
+    flex: 1;
+    color: #ffcc00;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
+}
+
+.hp-container {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.hp-label {
+    color: #aaa;
+    font-size: 11px;
+}
+
+.hp-bar {
+    width: 80px;
+    height: 12px;
+    background: #222;
+    border: 1px solid #555;
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.hp-fill {
+    height: 100%;
+    transition: width 0.3s ease;
+    width: 100%;
+}
+
+.hp-high { background: #4a4; }
+.hp-mid { background: #aa4; }
+.hp-low { background: #a44; }
+
+.score-label {
+    color: #aaa;
+    font-size: 11px;
+    white-space: nowrap;
+}
+
+/* ============================================
+   LOWER PANEL (Verbs + Inventory)
+   ============================================ */
+#lower-panel {
+    display: flex;
+    border-bottom: 1px solid #555;
+    min-height: 80px;
+}
+
+/* ============================================
+   VERB PANEL
+   ============================================ */
+.verb-panel {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    gap: 2px;
+    padding: 4px;
+    background: #222;
+    width: 220px;
+    flex-shrink: 0;
+    border-right: 1px solid #555;
+}
+
+.verb-btn {
+    background: #444;
+    color: #ddd;
+    border: 1px solid #666;
+    font-family: inherit;
+    font-size: 11px;
+    padding: 4px 2px;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: background 0.15s;
+    white-space: nowrap;
+}
+
+.verb-btn:hover {
+    background: #555;
+    color: #fff;
+}
+
+.verb-btn.active {
+    background: #667;
+    color: #fff;
+    border-color: #88a;
+    box-shadow: inset 0 0 4px rgba(100,100,200,0.3);
+}
+
+/* ============================================
+   INVENTORY BAR
+   ============================================ */
+.inventory-bar {
+    flex: 1;
+    display: flex;
+    align-items: flex-start;
+    gap: 4px;
+    padding: 4px 6px;
+    background: #1e1e1e;
+    overflow-x: auto;
+    overflow-y: hidden;
+    min-height: 72px;
+}
+
+.inventory-empty {
+    color: #555;
+    font-size: 11px;
+    padding: 8px;
+    font-style: italic;
+    align-self: center;
+}
+
+.inventory-slot {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 56px;
+    min-width: 56px;
+    padding: 3px;
+    cursor: pointer;
+    border: 1px solid transparent;
+    border-radius: 3px;
+    transition: background 0.15s;
+}
+
+.inventory-slot:hover {
+    background: rgba(255,255,255,0.08);
+    border-color: #555;
+}
+
+.inventory-slot.selected {
+    background: rgba(100,100,200,0.2);
+    border-color: #88a;
+}
+
+.inventory-icon {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #333;
+    border: 1px solid #555;
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.inventory-icon img {
+    width: 32px;
+    height: 32px;
+    image-rendering: pixelated;
+}
+
+.inventory-icon-text {
+    font-size: 9px;
+    color: #aaa;
+    font-weight: bold;
+}
+
+.inventory-label {
+    font-size: 8px;
+    color: #999;
+    text-align: center;
+    margin-top: 2px;
+    max-width: 54px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* ============================================
+   MESSAGE LOG
+   ============================================ */
+.message-log {
+    background: #111;
+    color: #ccc;
+    padding: 6px 10px;
+    font-size: 12px;
+    line-height: 1.5;
+    max-height: 100px;
+    min-height: 60px;
+    overflow-y: auto;
+    border-top: 1px solid #444;
+}
+
+.message {
+    margin-bottom: 2px;
+}
+
+.message-spacer {
+    height: 8px;
+}
+
+.message-divider {
+    border: none;
+    border-top: 1px solid #333;
+    margin: 4px 0;
+}
+
+.win-msg {
+    color: #4f4;
+    font-weight: bold;
+}
+
+.lose-msg {
+    color: #f44;
+    font-weight: bold;
+}
+
+.system-msg {
+    color: #aaa;
+    font-style: italic;
+}
+
+.item-msg {
+    color: #4af;
+}
+
+.combat-msg {
+    color: #fa4;
+}
+
+/* ============================================
+   DIALOGUE BOX
+   ============================================ */
+.dialogue-box {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: rgba(0, 0, 0, 0.92);
+    border-top: 2px solid #888;
+    padding: 10px;
+    display: flex;
+    gap: 12px;
+    z-index: 20;
+    max-height: 250px;
+}
+
+.dialogue-portrait {
+    width: 64px;
+    height: 64px;
+    background: #333;
+    border: 1px solid #666;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.dialogue-portrait img {
+    width: 64px;
+    height: 64px;
+    image-rendering: pixelated;
+}
+
+.dialogue-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.dialogue-speaker {
+    color: #ffcc00;
+    font-weight: bold;
+    font-size: 13px;
+}
+
+.dialogue-text {
+    color: #e0e0e0;
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.dialogue-options {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    margin-top: 4px;
+}
+
+.dialogue-option-btn {
+    background: #333;
+    color: #adf;
+    border: 1px solid #555;
+    font-family: inherit;
+    font-size: 12px;
+    padding: 4px 8px;
+    cursor: pointer;
+    text-align: left;
+    border-radius: 2px;
+}
+
+.dialogue-option-btn:hover {
+    background: #444;
+    color: #fff;
+    border-color: #88a;
+}
+
+/* ============================================
+   COMBAT OVERLAY
+   ============================================ */
+.combat-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.85);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    z-index: 25;
+    padding: 20px;
+}
+
+.combat-enemy {
+    text-align: center;
+}
+
+.combat-enemy-name {
+    color: #f88;
+    font-size: 16px;
+    font-weight: bold;
+    margin-bottom: 6px;
+}
+
+.combat-hp-bar {
+    width: 200px;
+    height: 14px;
+    background: #222;
+    border: 1px solid #666;
+    border-radius: 3px;
+    overflow: hidden;
+    margin: 0 auto;
+}
+
+.combat-hp-fill {
+    height: 100%;
+    background: #c44;
+    transition: width 0.3s ease;
+    width: 100%;
+}
+
+.combat-log {
+    width: 300px;
+    max-height: 120px;
+    overflow-y: auto;
+    background: #111;
+    border: 1px solid #444;
+    padding: 6px 8px;
+    font-size: 11px;
+    border-radius: 3px;
+}
+
+.combat-log-msg {
+    color: #fa4;
+    margin-bottom: 3px;
+}
+
+.combat-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.combat-btn {
+    background: #444;
+    color: #ddd;
+    border: 1px solid #666;
+    font-family: inherit;
+    font-size: 13px;
+    padding: 6px 16px;
+    cursor: pointer;
+    border-radius: 3px;
+}
+
+.combat-btn:hover {
+    background: #555;
+    color: #fff;
+}
+
+.combat-attack { border-color: #a44; }
+.combat-attack:hover { background: #633; }
+.combat-grenade { border-color: #a84; }
+.combat-grenade:hover { background: #643; }
+.combat-insult { border-color: #84a; }
+.combat-insult:hover { background: #436; }
+.combat-flee { border-color: #4a4; }
+.combat-flee:hover { background: #363; }
+
+/* ============================================
+   GAME MENU
+   ============================================ */
+.game-menu {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 100;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.menu-overlay {
+    background: rgba(0, 0, 0, 0.8);
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.menu-panel {
+    background: #2a2a2a;
+    border: 2px solid #888;
+    border-radius: 6px;
+    padding: 20px;
+    min-width: 300px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.menu-title {
+    text-align: center;
+    color: #ffcc00;
+    margin-bottom: 8px;
+    font-size: 16px;
+}
+
+.menu-btn {
+    background: #444;
+    color: #ddd;
+    border: 1px solid #666;
+    font-family: inherit;
+    font-size: 13px;
+    padding: 8px 16px;
+    cursor: pointer;
+    border-radius: 3px;
+    width: 100%;
+}
+
+.menu-btn:hover {
+    background: #555;
+    color: #fff;
+}
+
+.menu-btn-danger {
+    border-color: #a44;
+}
+.menu-btn-danger:hover {
+    background: #633;
+}
+
+.menu-slot-list {
+    max-height: 200px;
+    overflow-y: auto;
+    border: 1px solid #444;
+    border-radius: 3px;
+    background: #1a1a1a;
+    padding: 4px;
+}
+
+.menu-save-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px;
+    border-bottom: 1px solid #333;
+}
+
+.menu-save-info {
+    flex: 1;
+    font-size: 11px;
+    color: #aaa;
+}
+
+.menu-btn-small {
+    background: #444;
+    color: #ddd;
+    border: 1px solid #555;
+    font-family: inherit;
+    font-size: 10px;
+    padding: 2px 8px;
+    cursor: pointer;
+    border-radius: 2px;
+}
+
+.menu-btn-small:hover {
+    background: #555;
+}
+
+.menu-no-saves {
+    color: #666;
+    font-size: 11px;
+    text-align: center;
+    padding: 8px;
+}
+
+/* ============================================
+   GAME OVER OVERLAY
+   ============================================ */
+#game-over-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.9);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 50;
+    gap: 16px;
+}
+
+#game-over-overlay.hidden {
+    display: none;
+}
+
+.game-over-title {
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.game-over-title.win { color: #4f4; }
+.game-over-title.lose { color: #f44; }
+
+.game-over-message {
+    color: #ccc;
+    font-size: 14px;
+    text-align: center;
+    max-width: 400px;
+    line-height: 1.5;
+}
+
+.game-over-score {
+    color: #ffcc00;
+    font-size: 14px;
+}
+
+.game-over-btn {
+    background: #444;
+    color: #ddd;
+    border: 1px solid #666;
+    font-family: inherit;
+    font-size: 14px;
+    padding: 8px 24px;
+    cursor: pointer;
+    border-radius: 3px;
+    margin-top: 8px;
+}
+
+.game-over-btn:hover {
+    background: #555;
+    color: #fff;
+}
+
+/* ============================================
+   SCROLLBAR STYLING
+   ============================================ */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #1a1a1a;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #555;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #777;
+}
+
+/* ============================================
+   TRANSITION OVERLAY
+   ============================================ */
+#transition-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #000;
+    pointer-events: none;
+    opacity: 0;
+    z-index: 10;
+    transition: opacity 0.3s ease;
+}

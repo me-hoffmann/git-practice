@@ -944,7 +944,7 @@ class GameEngine {
         if (show) win.classList.remove('hidden');
     }
 
-    // Scene drawing (simple pixel art on canvas)
+    // Scene drawing — uses original 1986 bitmaps from SCENE_BITMAPS when available
     drawScene(room) {
         const canvas = document.getElementById('scene-canvas');
         const ctx = canvas.getContext('2d');
@@ -953,13 +953,58 @@ class GameEngine {
         ctx.fillStyle = '#ffffff';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        if (room.art) {
+        // Check for original bitmap from the extracted game data
+        if (typeof SCENE_BITMAPS !== 'undefined' && SCENE_BITMAPS[room.id]) {
+            // Use cached image if available, otherwise load and cache it
+            if (!this._imageCache) this._imageCache = {};
+
+            if (this._imageCache[room.id]) {
+                this._drawBitmap(ctx, canvas, this._imageCache[room.id]);
+            } else {
+                const img = new Image();
+                img.onload = () => {
+                    this._imageCache[room.id] = img;
+                    this._drawBitmap(ctx, canvas, img);
+                };
+                img.src = SCENE_BITMAPS[room.id];
+            }
+        } else if (room.art) {
             room.art(ctx, canvas.width, canvas.height);
+            this._drawBorder(ctx, canvas);
         } else {
             this.drawDefaultScene(ctx, canvas.width, canvas.height, room.id);
+            this._drawBorder(ctx, canvas);
         }
+    }
 
-        // Border
+    // Draw an extracted bitmap onto the canvas, centered and scaled to fit
+    _drawBitmap(ctx, canvas, img) {
+        const w = canvas.width;
+        const h = canvas.height;
+
+        // Clear canvas
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, w, h);
+
+        // Scale image to fit the canvas while maintaining aspect ratio
+        const scaleX = w / img.width;
+        const scaleY = h / img.height;
+        const scale = Math.min(scaleX, scaleY);
+
+        const drawW = img.width * scale;
+        const drawH = img.height * scale;
+        const drawX = (w - drawW) / 2;
+        const drawY = (h - drawH) / 2;
+
+        // Use pixelated rendering to preserve the 1-bit pixel art look
+        ctx.imageSmoothingEnabled = false;
+        ctx.drawImage(img, drawX, drawY, drawW, drawH);
+
+        this._drawBorder(ctx, canvas);
+    }
+
+    // Draw border around the scene canvas
+    _drawBorder(ctx, canvas) {
         ctx.strokeStyle = '#000000';
         ctx.lineWidth = 2;
         ctx.strokeRect(1, 1, canvas.width - 2, canvas.height - 2);
