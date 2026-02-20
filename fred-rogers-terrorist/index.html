@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fred Rogers, Terrorist</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="desktop">
+        <div id="menu-bar">
+            <span class="menu-item apple-menu">&#63743;</span>
+            <span class="menu-item"><strong>File</strong></span>
+            <span class="menu-item"><strong>Edit</strong></span>
+            <span class="menu-item"><strong>Commands</strong></span>
+            <span class="menu-item"><strong>Help</strong></span>
+        </div>
+
+        <div id="game-window">
+            <div id="title-bar">
+                <div class="title-bar-lines left"></div>
+                <span id="window-title">Fred Rogers, Terrorist</span>
+                <div class="title-bar-lines right"></div>
+            </div>
+
+            <div id="game-content">
+                <div id="scene-image">
+                    <canvas id="scene-canvas" width="512" height="200"></canvas>
+                </div>
+
+                <div id="text-area">
+                    <div id="game-text"></div>
+                </div>
+
+                <div id="status-bar">
+                    <span id="status-hp">HP: 100</span>
+                    <span id="status-location">Location: Introduction</span>
+                    <span id="status-score">Score: 0</span>
+                </div>
+
+                <div id="input-area">
+                    <label for="command-input">&gt;</label>
+                    <input type="text" id="command-input" autofocus autocomplete="off" placeholder="What do you want to do?">
+                </div>
+            </div>
+        </div>
+
+        <div id="inventory-window" class="mac-window hidden">
+            <div class="title-bar small">
+                <div class="title-bar-lines left"></div>
+                <span>Inventory</span>
+                <div class="title-bar-lines right"></div>
+                <div class="close-box" onclick="toggleInventory()"></div>
+            </div>
+            <div id="inventory-list"></div>
+        </div>
+    </div>
+
+    <script src="engine.js"></script>
+    <script src="data.js"></script>
+    <script src="game.js"></script>
+</body>
+</html>
