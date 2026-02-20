@@ -78,7 +78,7 @@ class GameEngine {
         };
     }
 
-    // Output
+    // Output — now supports making items/characters clickable
     print(text, className) {
         this.outputBuffer.push({ text, className: className || '' });
     }
@@ -87,12 +87,43 @@ class GameEngine {
         const textArea = document.getElementById('game-text');
         this.outputBuffer.forEach(({ text, className }) => {
             const p = document.createElement('p');
-            p.innerHTML = text;
+            p.innerHTML = this.makeInteractive(text);
             if (className) p.className = className;
             textArea.appendChild(p);
         });
         this.outputBuffer = [];
         textArea.scrollTop = textArea.scrollHeight;
+        this.updateExitsBar();
+        this.updateCompass();
+    }
+
+    // Make item names and character names clickable in output text
+    makeInteractive(text) {
+        let result = text;
+        const room = this.rooms[this.player.currentRoom];
+        if (!room) return result;
+
+        // Make character names clickable
+        for (const charId of room.characters) {
+            const char = this.characters[charId];
+            if (!char || !char.alive || char.defeated) continue;
+            const name = char.name;
+            const escapedName = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            const regex = new RegExp(`\\b${escapedName}\\b`, 'g');
+            result = result.replace(regex, `<span class="clickable-char" data-char-id="${charId}" onclick="showCharacterMenu(event, '${charId}')">${name}</span>`);
+        }
+
+        // Make visible item names clickable (room items)
+        for (const itemId of room.items) {
+            const item = this.items[itemId];
+            if (!item || item.hidden) continue;
+            const name = item.name;
+            const escapedName = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            const regex = new RegExp(escapedName, 'gi');
+            result = result.replace(regex, `<span class="clickable-item" data-item-id="${itemId}" data-item-location="room" onclick="showItemMenu(event, '${itemId}', 'room')">${name}</span>`);
+        }
+
+        return result;
     }
 
     clearOutput() {
@@ -159,6 +190,73 @@ class GameEngine {
         room.visited = true;
         this.drawScene(room);
         this.updateStatus();
+    }
+
+    // Update the exits bar with clickable direction links
+    updateExitsBar() {
+        const exitsList = document.getElementById('exits-list');
+        exitsList.innerHTML = '';
+        const room = this.rooms[this.player.currentRoom];
+        if (!room) return;
+
+        const dirLabels = {
+            north: 'North', south: 'South', east: 'East', west: 'West',
+            up: 'Up', down: 'Down'
+        };
+
+        const exits = Object.keys(room.exits);
+        if (exits.length === 0) {
+            const span = document.createElement('span');
+            span.style.fontStyle = 'italic';
+            span.style.fontSize = '10px';
+            span.style.color = '#888';
+            span.textContent = 'None';
+            exitsList.appendChild(span);
+            return;
+        }
+
+        exits.forEach(dir => {
+            const btn = document.createElement('button');
+            btn.className = 'exit-link';
+            btn.textContent = dirLabels[dir] || dir;
+            btn.onclick = () => runCommand(dir);
+            exitsList.appendChild(btn);
+        });
+    }
+
+    // Update compass rose to highlight available directions
+    updateCompass() {
+        const room = this.rooms[this.player.currentRoom];
+        if (!room) return;
+
+        const dirMap = {
+            north: 'compass-n',
+            south: 'compass-s',
+            east: 'compass-e',
+            west: 'compass-w'
+        };
+
+        // Reset all direction buttons
+        Object.values(dirMap).forEach(id => {
+            const btn = document.getElementById(id);
+            btn.classList.remove('available', 'unavailable');
+            btn.classList.add(room.exits[Object.keys(dirMap).find(k => dirMap[k] === id)] ? 'available' : 'unavailable');
+            btn.disabled = !room.exits[Object.keys(dirMap).find(k => dirMap[k] === id)];
+        });
+
+        // Up/Down
+        const upBtn = document.getElementById('compass-up');
+        const downBtn = document.getElementById('compass-down');
+        if (room.exits.up) {
+            upBtn.classList.remove('hidden');
+        } else {
+            upBtn.classList.add('hidden');
+        }
+        if (room.exits.down) {
+            downBtn.classList.remove('hidden');
+        } else {
+            downBtn.classList.add('hidden');
+        }
     }
 
     // Combat
@@ -540,7 +638,7 @@ class GameEngine {
                 break;
 
             default:
-                this.print(`I don't understand "${raw}". Type HELP for commands.`, 'error-msg');
+                this.print(`I don't understand "${raw}". Type HELP for commands, or use the buttons below.`, 'error-msg');
                 break;
         }
 
@@ -737,21 +835,20 @@ class GameEngine {
 
     showHelp() {
         this.print("=== COMMANDS ===", 'system-msg');
-        this.print("Movement: NORTH (N), SOUTH (S), EAST (E), WEST (W), UP (U), DOWN (D)");
+        this.print("Movement: Arrow keys, compass buttons, or type N/S/E/W/U/D");
         this.print("LOOK (L) - Look around the room");
-        this.print("GET/TAKE [item] - Pick up an item");
+        this.print("GET/TAKE [item] - Pick up an item (or click the item)");
         this.print("DROP [item] - Drop an item");
-        this.print("USE [item] - Use an item");
+        this.print("USE [item] - Use an item (or click it in inventory)");
         this.print("GIVE [item] TO [person] - Give an item");
         this.print("INVENTORY (I) - Check your inventory");
-        this.print("ATTACK/FIGHT [target] - Fight someone");
-        this.print("TALK TO [person] - Talk to someone");
+        this.print("ATTACK/FIGHT [target] - Fight someone (or click them)");
+        this.print("TALK TO [person] - Talk to someone (or click them)");
         this.print("SEARCH/EXAMINE - Search the area");
         this.print("OPEN/PULL/DIG - Interact with objects");
         this.print("READ [item] - Read something");
         this.print("REST (R) - Rest and recover HP");
         this.print("STATUS (T) - Check your status");
-        this.print("SCORE - Check your score");
         this.print("HELP (?) - Show this help");
         this.print("RESTART - Start over");
     }
@@ -838,6 +935,8 @@ class GameEngine {
                 const div = document.createElement('div');
                 div.className = 'inv-item';
                 div.textContent = item ? item.name : id;
+                // Click on inventory item to show context menu
+                div.onclick = (e) => showItemMenu(e, id, 'inventory');
                 list.appendChild(div);
             });
         }
@@ -867,12 +966,10 @@ class GameEngine {
     }
 
     drawDefaultScene(ctx, w, h, roomId) {
-        // Generate a simple scene based on room type
         ctx.fillStyle = '#000';
         ctx.font = '14px Monaco, monospace';
         ctx.textAlign = 'center';
 
-        // Simple scene generation based on keywords in room ID
         if (roomId.includes('house') || roomId.includes('porch') || roomId.includes('kitchen') || roomId.includes('bathroom')) {
             this.drawInterior(ctx, w, h);
         } else if (roomId.includes('street') || roomId.includes('road') || roomId.includes('alley')) {
@@ -889,29 +986,23 @@ class GameEngine {
     }
 
     drawInterior(ctx, w, h) {
-        // Floor
         ctx.fillStyle = '#ddd';
         ctx.fillRect(0, h * 0.6, w, h * 0.4);
-        // Walls
         ctx.fillStyle = '#eee';
         ctx.fillRect(0, 0, w, h * 0.6);
-        // Wall line
         ctx.strokeStyle = '#000';
         ctx.lineWidth = 1;
         ctx.beginPath();
         ctx.moveTo(0, h * 0.6);
         ctx.lineTo(w, h * 0.6);
         ctx.stroke();
-        // Door
         ctx.fillStyle = '#aaa';
         ctx.fillRect(w * 0.4, h * 0.2, w * 0.2, h * 0.4);
         ctx.strokeRect(w * 0.4, h * 0.2, w * 0.2, h * 0.4);
-        // Doorknob
         ctx.fillStyle = '#666';
         ctx.beginPath();
         ctx.arc(w * 0.56, h * 0.42, 3, 0, Math.PI * 2);
         ctx.fill();
-        // Floor pattern
         for (let x = 0; x < w; x += 30) {
             ctx.beginPath();
             ctx.moveTo(x, h * 0.6);
@@ -922,16 +1013,12 @@ class GameEngine {
     }
 
     drawStreet(ctx, w, h) {
-        // Sky
         ctx.fillStyle = '#eee';
         ctx.fillRect(0, 0, w, h * 0.5);
-        // Ground
         ctx.fillStyle = '#ccc';
         ctx.fillRect(0, h * 0.5, w, h * 0.5);
-        // Road
         ctx.fillStyle = '#999';
         ctx.fillRect(w * 0.2, h * 0.5, w * 0.6, h * 0.5);
-        // Road lines
         ctx.strokeStyle = '#fff';
         ctx.setLineDash([10, 10]);
         ctx.beginPath();
@@ -939,14 +1026,12 @@ class GameEngine {
         ctx.lineTo(w * 0.5, h);
         ctx.stroke();
         ctx.setLineDash([]);
-        // Houses
         for (let i = 0; i < 3; i++) {
             const hx = w * 0.1 + i * w * 0.3;
             ctx.fillStyle = '#ddd';
             ctx.fillRect(hx, h * 0.25, w * 0.15, h * 0.25);
             ctx.strokeStyle = '#000';
             ctx.strokeRect(hx, h * 0.25, w * 0.15, h * 0.25);
-            // Roof
             ctx.beginPath();
             ctx.moveTo(hx - 5, h * 0.25);
             ctx.lineTo(hx + w * 0.075, h * 0.12);
@@ -959,10 +1044,8 @@ class GameEngine {
     }
 
     drawMakeBelieve(ctx, w, h) {
-        // Swirly dimension effect
         ctx.fillStyle = '#eee';
         ctx.fillRect(0, 0, w, h);
-        // Spiral pattern
         ctx.strokeStyle = '#000';
         ctx.lineWidth = 1;
         for (let i = 0; i < 8; i++) {
@@ -978,7 +1061,6 @@ class GameEngine {
             }
             ctx.stroke();
         }
-        // Stars
         for (let i = 0; i < 20; i++) {
             const sx = Math.random() * w;
             const sy = Math.random() * h;
@@ -988,16 +1070,13 @@ class GameEngine {
     }
 
     drawDark(ctx, w, h) {
-        // Dark scene
         ctx.fillStyle = '#333';
         ctx.fillRect(0, 0, w, h);
-        // Slight lighter area in center
         const grd = ctx.createRadialGradient(w * 0.5, h * 0.5, 10, w * 0.5, h * 0.5, 150);
         grd.addColorStop(0, '#666');
         grd.addColorStop(1, '#333');
         ctx.fillStyle = grd;
         ctx.fillRect(0, 0, w, h);
-        // Drip lines
         ctx.strokeStyle = '#555';
         for (let i = 0; i < 10; i++) {
             ctx.beginPath();
@@ -1005,7 +1084,6 @@ class GameEngine {
             ctx.lineTo(Math.random() * w, h);
             ctx.stroke();
         }
-        // Eyes in the dark
         ctx.fillStyle = '#fff';
         ctx.beginPath();
         ctx.arc(w * 0.3, h * 0.4, 4, 0, Math.PI * 2);
@@ -1014,13 +1092,10 @@ class GameEngine {
     }
 
     drawAirport(ctx, w, h) {
-        // Sky
         ctx.fillStyle = '#eee';
         ctx.fillRect(0, 0, w, h * 0.6);
-        // Tarmac
         ctx.fillStyle = '#aaa';
         ctx.fillRect(0, h * 0.6, w, h * 0.4);
-        // Runway lines
         ctx.strokeStyle = '#fff';
         ctx.lineWidth = 2;
         ctx.setLineDash([20, 10]);
@@ -1029,14 +1104,12 @@ class GameEngine {
         ctx.lineTo(w, h * 0.8);
         ctx.stroke();
         ctx.setLineDash([]);
-        // Plane
         ctx.fillStyle = '#ddd';
         ctx.beginPath();
         ctx.ellipse(w * 0.5, h * 0.45, 100, 20, 0, 0, Math.PI * 2);
         ctx.fill();
         ctx.strokeStyle = '#000';
         ctx.stroke();
-        // Wings
         ctx.beginPath();
         ctx.moveTo(w * 0.4, h * 0.45);
         ctx.lineTo(w * 0.3, h * 0.55);
@@ -1051,7 +1124,6 @@ class GameEngine {
         ctx.closePath();
         ctx.fill();
         ctx.stroke();
-        // Tail
         ctx.beginPath();
         ctx.moveTo(w * 0.35, h * 0.45);
         ctx.lineTo(w * 0.32, h * 0.3);
@@ -1062,19 +1134,14 @@ class GameEngine {
     }
 
     drawOutdoors(ctx, w, h) {
-        // Sky
         ctx.fillStyle = '#eee';
         ctx.fillRect(0, 0, w, h * 0.5);
-        // Ground
         ctx.fillStyle = '#ccc';
         ctx.fillRect(0, h * 0.5, w, h * 0.5);
-        // Trees
         for (let i = 0; i < 4; i++) {
             const tx = w * 0.15 + i * w * 0.22;
-            // Trunk
             ctx.fillStyle = '#888';
             ctx.fillRect(tx - 4, h * 0.3, 8, h * 0.2);
-            // Crown
             ctx.fillStyle = '#aaa';
             ctx.beginPath();
             ctx.arc(tx, h * 0.25, 25, 0, Math.PI * 2);
@@ -1082,7 +1149,6 @@ class GameEngine {
             ctx.strokeStyle = '#000';
             ctx.stroke();
         }
-        // Path
         ctx.fillStyle = '#bbb';
         ctx.beginPath();
         ctx.moveTo(w * 0.4, h);
