@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fred Rogers, Terrorist — A Storybook Adventure</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400;1,600&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- Inline SVG filters for hand-drawn / watercolor effects -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+        <filter id="hand-drawn">
+            <feTurbulence type="turbulence" baseFrequency="0.015 0.02"
+                          numOctaves="3" result="turbulence" seed="2"/>
+            <feDisplacementMap in="SourceGraphic" in2="turbulence"
+                               scale="1.5" xChannelSelector="R" yChannelSelector="G"/>
+        </filter>
+        <filter id="watercolor">
+            <feTurbulence type="fractalNoise" baseFrequency="0.04"
+                          numOctaves="4" result="noise"/>
+            <feDisplacementMap in="SourceGraphic" in2="noise"
+                               scale="3" xChannelSelector="R" yChannelSelector="G"/>
+            <feGaussianBlur stdDeviation="0.4"/>
+        </filter>
+        <filter id="paper-grain">
+            <feTurbulence type="fractalNoise" baseFrequency="0.65"
+                          numOctaves="4" stitchTiles="stitch" result="grain"/>
+            <feColorMatrix type="saturate" values="0" in="grain" result="bwgrain"/>
+            <feBlend in="SourceGraphic" in2="bwgrain" mode="multiply"/>
+        </filter>
+        <filter id="soft-glow">
+            <feGaussianBlur stdDeviation="3" result="blur"/>
+            <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+        </filter>
+    </defs>
+</svg>
+
+<div id="game-wrapper">
+
+    <!-- ==================== TITLE SCREEN ==================== -->
+    <div id="title-screen">
+        <div class="title-ornament">&#x2767;</div>
+        <h1>Fred Rogers,<br><span class="title-accent">Terrorist</span></h1>
+        <p class="subtitle">A Storybook Adventure</p>
+        <p class="title-tagline">Based on the original 1986 game by<br>Michael E. Hoffmann &amp; Matthew R. Montgomery</p>
+        <button id="begin-btn">Begin Your Adventure</button>
+        <p class="title-disclaimer">
+            <em>This game is a work of satire. No puppets were harmed in its making.</em>
+        </p>
+    </div>
+
+    <!-- ==================== MAIN GAME ==================== -->
+    <div id="game-container">
+
+        <!-- Top nav -->
+        <nav id="game-nav">
+            <span id="score-display" class="score-badge" aria-live="polite">Score: 0</span>
+            <button id="menu-btn" class="nav-btn" aria-label="Open menu">&#9776;</button>
+        </nav>
+
+        <!-- Room header -->
+        <header id="room-header">
+            <h2 id="room-name"></h2>
+        </header>
+
+        <!-- Scene viewport -->
+        <main id="scene-viewport">
+            <div id="scene-layer">
+                <!-- Scene art layers and hotspot divs are built dynamically -->
+            </div>
+            <div id="transition-overlay"></div>
+        </main>
+
+        <!-- Narration area -->
+        <div id="narration-area">
+            <div id="narration-text"></div>
+        </div>
+
+        <!-- ==================== DIALOGUE OVERLAY ==================== -->
+        <div id="dialogue-overlay" aria-live="polite">
+            <div id="dialogue-portrait"></div>
+            <div id="dialogue-content">
+                <div id="dialogue-speaker"></div>
+                <div id="dialogue-text"></div>
+                <div id="dialogue-options"></div>
+                <div id="dialogue-drop-zone" aria-label="Drop an item here to give it">
+                    <span class="drop-icon">&#x2709;</span>
+                    <span class="drop-text">Drag an item here...</span>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ==================== CONTEXT MENU ==================== -->
+    <div id="context-menu" role="menu" aria-label="Actions"></div>
+
+    <!-- ==================== INVENTORY DRAWER ==================== -->
+    <div id="inventory-drawer">
+        <div id="drawer-handle" role="button" aria-label="Toggle inventory" tabindex="0">
+            <div class="handle-notch"></div>
+            <span class="handle-label">Inventory</span>
+        </div>
+        <div id="drawer-contents">
+            <div id="inventory-empty">Your pockets are empty.</div>
+        </div>
+    </div>
+
+    <!-- ==================== GAME MENU OVERLAY ==================== -->
+    <div id="menu-overlay" class="hidden">
+        <div id="menu-panel">
+            <h3 class="menu-title">~ Menu ~</h3>
+            <button class="menu-action" id="menu-save">Save Game</button>
+            <button class="menu-action" id="menu-load">Load Game</button>
+            <button class="menu-action" id="menu-restart">Restart</button>
+            <button class="menu-action" id="menu-resume">Resume</button>
+        </div>
+    </div>
+
+</div>
+
+<!-- ==================== SCRIPTS ==================== -->
+<script src="js/engine.js"></script>
+<script src="js/narrator.js"></script>
+<script src="js/items.js"></script>
+<script src="js/characters.js"></script>
+<script src="js/dialogues.js"></script>
+<script src="js/scenes.js"></script>
+<script src="js/inventory.js"></script>
+<script src="js/main.js"></script>
+
+</body>
+</html>
