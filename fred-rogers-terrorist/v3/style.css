@@ -435,19 +435,89 @@ body {
 
 .hotspot[data-type="exit"] {
     cursor: pointer;
+    background: rgba(139,107,74,0.06);
+    border: 1.5px dashed rgba(139,107,74,0.15);
 }
 
 .hotspot[data-type="exit"]:hover {
     box-shadow: 0 0 14px rgba(168,200,224,0.5);
-    background: rgba(168,200,224,0.12);
+    background: rgba(168,200,224,0.15);
+    border-color: rgba(122,155,181,0.4);
+}
+
+/* Arrow indicator inside exit hotspots */
+.exit-arrow {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 1.6rem;
+    color: rgba(139,107,74,0.4);
+    pointer-events: none;
+    font-family: var(--font-ui);
+    font-weight: 700;
+    text-shadow: 0 1px 3px rgba(255,255,255,0.6);
+    animation: exitPulse 2.5s ease-in-out infinite;
+}
+
+.hotspot[data-type="exit"]:hover .exit-arrow {
+    color: rgba(122,155,181,0.7);
+}
+
+/* Show exit labels always */
+.hotspot[data-type="exit"] .hotspot-label {
+    opacity: 0.6;
+    font-size: 0.65rem;
+}
+
+.hotspot[data-type="character"] {
+    box-shadow: 0 0 10px rgba(200,105,94,0.15);
+    background: rgba(200,105,94,0.04);
 }
 
 .hotspot[data-type="character"]:hover {
-    box-shadow: 0 0 14px rgba(200,105,94,0.35);
-    background: rgba(200,105,94,0.08);
+    box-shadow: 0 0 18px rgba(200,105,94,0.4);
+    background: rgba(200,105,94,0.1);
+}
+
+/* Always show labels for characters and items */
+.hotspot[data-type="character"] .hotspot-label,
+.hotspot[data-type="item"] .hotspot-label {
+    opacity: 0.85;
 }
 
 .character-indicator {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 3rem;
+    pointer-events: none;
+    filter: drop-shadow(0 2px 6px rgba(0,0,0,0.3));
+    transition: transform 0.2s ease;
+    /* Circular backdrop behind emoji */
+    background: radial-gradient(circle, rgba(253,246,227,0.85) 40%, rgba(245,234,214,0.5) 70%, transparent 100%);
+    width: 3.6rem;
+    height: 3.6rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 12px rgba(200,105,94,0.25);
+    animation: characterBob 3s ease-in-out infinite;
+}
+
+.hotspot[data-type="character"]:hover .character-indicator {
+    transform: translate(-50%, -50%) scale(1.15);
+    box-shadow: 0 0 20px rgba(200,105,94,0.4);
+}
+
+@keyframes characterBob {
+    0%, 100% { transform: translate(-50%, -50%) translateY(0); }
+    50%      { transform: translate(-50%, -50%) translateY(-4px); }
+}
+
+.item-indicator {
     position: absolute;
     top: 50%;
     left: 50%;
@@ -456,25 +526,28 @@ body {
     pointer-events: none;
     filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
     transition: transform 0.2s ease;
-}
-
-.hotspot[data-type="character"]:hover .character-indicator {
-    transform: translate(-50%, -50%) scale(1.15);
-}
-
-.item-indicator {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    font-size: 1.4rem;
-    pointer-events: none;
-    filter: drop-shadow(0 1px 3px rgba(0,0,0,0.15));
-    transition: transform 0.2s ease;
+    /* Rounded backdrop */
+    background: radial-gradient(circle, rgba(249,228,183,0.8) 35%, rgba(249,228,183,0.3) 65%, transparent 100%);
+    width: 2.6rem;
+    height: 2.6rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: itemShimmer 2.5s ease-in-out infinite;
 }
 
 .hotspot[data-type="item"]:hover .item-indicator {
     transform: translate(-50%, -50%) scale(1.2);
+}
+
+.hotspot[data-type="item"] {
+    box-shadow: 0 0 8px rgba(249,228,183,0.3);
+}
+
+@keyframes itemShimmer {
+    0%, 100% { box-shadow: 0 0 6px rgba(249,228,183,0.3); }
+    50%      { box-shadow: 0 0 16px rgba(249,228,183,0.7); }
 }
 
 /* Hotspot tooltip */

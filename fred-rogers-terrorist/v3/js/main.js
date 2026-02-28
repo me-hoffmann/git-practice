@@ -193,6 +193,15 @@
             }
         }
 
+        // Exit arrow indicator (visible in scene)
+        if (hs.type === 'exit' && hs.exitDir) {
+            var arrowMap = { east: '\u2192', west: '\u2190', north: '\u2191', south: '\u2193', up: '\u2191', down: '\u2193' };
+            var arrow = document.createElement('div');
+            arrow.className = 'exit-arrow';
+            arrow.textContent = arrowMap[hs.exitDir] || '\u2192';
+            el.appendChild(arrow);
+        }
+
         // Event handlers
         el.addEventListener('click', function(e) {
             e.stopPropagation();
