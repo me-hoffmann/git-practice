@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fred Rogers, Terrorist</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="desktop">
+        <div id="menu-bar">
+            <span class="menu-item apple-menu">&#63743;</span>
+            <span class="menu-item"><strong>File</strong></span>
+            <span class="menu-item"><strong>Edit</strong></span>
+            <span class="menu-item"><strong>Commands</strong></span>
+            <span class="menu-item"><strong>Help</strong></span>
+        </div>
+
+        <div id="game-window">
+            <div id="title-bar">
+                <div class="title-bar-lines left"></div>
+                <span id="window-title">Fred Rogers, Terrorist</span>
+                <div class="title-bar-lines right"></div>
+            </div>
+
+            <div id="game-content">
+                <div id="scene-image">
+                    <canvas id="scene-canvas" width="512" height="200"></canvas>
+                </div>
+
+                <div id="text-area">
+                    <div id="game-text"></div>
+                </div>
+
+                <!-- Exits bar showing available directions as clickable links -->
+                <div id="exits-bar">
+                    <span class="exits-label">Exits:</span>
+                    <div id="exits-list"></div>
+                </div>
+
+                <div id="status-bar">
+                    <span id="status-hp">HP: 100</span>
+                    <span id="status-location">Location: Introduction</span>
+                    <span id="status-score">Score: 0</span>
+                </div>
+
+                <!-- Action buttons panel -->
+                <div id="action-panel">
+                    <div id="action-buttons">
+                        <button class="action-btn" onclick="runCommand('look')" title="Look around">Look</button>
+                        <button class="action-btn" onclick="runCommand('search')" title="Search the area">Search</button>
+                        <button class="action-btn" onclick="runCommand('inventory')" title="Check inventory">Inventory</button>
+                        <button class="action-btn" onclick="runCommand('rest')" title="Rest and heal">Rest</button>
+                        <button class="action-btn" onclick="runCommand('status')" title="Check status">Status</button>
+                        <button class="action-btn" onclick="runCommand('help')" title="Show help">Help</button>
+                    </div>
+
+                    <!-- Compass rose for navigation -->
+                    <div id="compass">
+                        <button class="compass-btn" id="compass-nw" disabled></button>
+                        <button class="compass-btn" id="compass-n" onclick="runCommand('north')" title="Go North (&#8593;)">N</button>
+                        <button class="compass-btn" id="compass-ne" disabled></button>
+                        <button class="compass-btn" id="compass-w" onclick="runCommand('west')" title="Go West (&#8592;)">W</button>
+                        <button class="compass-btn compass-center" id="compass-center">
+                            <span id="compass-up" class="compass-ud hidden" onclick="runCommand('up')" title="Go Up (Shift+&#8593;)">U</span>
+                            <span id="compass-dot">&#x271A;</span>
+                            <span id="compass-down" class="compass-ud hidden" onclick="runCommand('down')" title="Go Down (Shift+&#8595;)">D</span>
+                        </button>
+                        <button class="compass-btn" id="compass-e" onclick="runCommand('east')" title="Go East (&#8594;)">E</button>
+                        <button class="compass-btn" id="compass-sw" disabled></button>
+                        <button class="compass-btn" id="compass-s" onclick="runCommand('south')" title="Go South (&#8595;)">S</button>
+                        <button class="compass-btn" id="compass-se" disabled></button>
+                    </div>
+                </div>
+
+                <div id="input-area">
+                    <label for="command-input">&gt;</label>
+                    <input type="text" id="command-input" autofocus autocomplete="off" placeholder="Type a command, click a button, or use arrow keys...">
+                </div>
+            </div>
+        </div>
+
+        <div id="inventory-window" class="mac-window hidden">
+            <div class="title-bar small">
+                <div class="title-bar-lines left"></div>
+                <span>Inventory</span>
+                <div class="title-bar-lines right"></div>
+                <div class="close-box" onclick="toggleInventory()"></div>
+            </div>
+            <div id="inventory-list"></div>
+        </div>
+    </div>
+
+    <!-- Context menu for right-clicking items/characters -->
+    <div id="context-menu" class="hidden">
+        <div id="context-menu-items"></div>
+    </div>
+
+    <script src="scene_data.js"></script>
+    <script src="engine.js"></script>
+    <script src="data.js"></script>
+    <script src="game.js"></script>
+</body>
+</html>
