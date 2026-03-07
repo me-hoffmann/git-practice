@@ -412,6 +412,28 @@ body {
     border-radius: 2px;
 }
 
+/* ============================
+   Scene Depth Utilities
+   ============================ */
+.scene-vignette {
+    position: absolute; inset: 0;
+    box-shadow: inset 0 0 50px rgba(0,0,0,0.08);
+    pointer-events: none; z-index: 3;
+}
+.scene-vignette-dark {
+    position: absolute; inset: 0;
+    box-shadow: inset 0 0 70px rgba(0,0,0,0.22);
+    pointer-events: none; z-index: 3;
+}
+.scene-light-warm {
+    position: absolute; pointer-events: none; z-index: 2;
+    background: radial-gradient(ellipse, rgba(249,228,183,0.12) 0%, transparent 70%);
+}
+.scene-light-cool {
+    position: absolute; pointer-events: none; z-index: 2;
+    background: radial-gradient(ellipse, rgba(168,200,224,0.1) 0%, transparent 70%);
+}
+
 /* ============================================
    HOTSPOTS
    ============================================ */
@@ -548,6 +570,174 @@ body {
 @keyframes itemShimmer {
     0%, 100% { box-shadow: 0 0 6px rgba(249,228,183,0.3); }
     50%      { box-shadow: 0 0 16px rgba(249,228,183,0.7); }
+}
+
+/* ============================
+   CSS Art Characters
+   ============================ */
+
+/* Character indicator adjustments for CSS art */
+.character-indicator { overflow: hidden; position: relative; }
+
+/* --- The Landlord --- */
+.char-landlord { position: absolute; inset: 0; }
+.cl-body {
+    position: absolute; bottom: 0; left: 18%; width: 64%; height: 40%;
+    background: linear-gradient(to bottom, #2a2a3a, #1a1a2a);
+    border-radius: 20% 20% 0 0;
+}
+.cl-collar {
+    position: absolute; bottom: 38%; left: 32%; width: 36%; height: 8%;
+    background: #f0f0e8; border-radius: 2px;
+}
+.cl-head {
+    position: absolute; top: 8%; left: 22%; width: 56%; height: 48%;
+    background: radial-gradient(ellipse, #d4907e, #c07060);
+    border-radius: 45%;
+}
+.cl-brow {
+    position: absolute; top: 28%; width: 28%; height: 8%;
+    background: #4a3020; border-radius: 2px;
+}
+.cl-brow-l { left: 12%; transform: rotate(15deg); }
+.cl-brow-r { right: 12%; transform: rotate(-15deg); }
+.cl-eye {
+    position: absolute; top: 40%; width: 12%; height: 12%;
+    background: #1a1a1a; border-radius: 50%;
+}
+.cl-eye-l { left: 22%; }
+.cl-eye-r { right: 22%; }
+.cl-mouth {
+    position: absolute; bottom: 18%; left: 25%; width: 50%; height: 10%;
+    border-bottom: 3px solid #8a3020;
+    border-radius: 0 0 50% 50%;
+}
+
+/* --- A Mugger --- */
+.char-mugger { position: absolute; inset: 0; }
+.cm-hood {
+    position: absolute; top: 2%; left: 15%; width: 70%; height: 55%;
+    background: linear-gradient(to bottom, #3a3a40, #2a2a30);
+    border-radius: 50% 50% 20% 20%;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+}
+.cm-face {
+    position: absolute; top: 18%; left: 25%; width: 50%; height: 32%;
+    background: radial-gradient(ellipse, #1a1816, #0a0908);
+    border-radius: 40%;
+}
+.cm-eye {
+    position: absolute; top: 28%; width: 10%; height: 8%;
+    background: radial-gradient(circle, #e0e0d0, #a0a090);
+    border-radius: 50%;
+    box-shadow: 0 0 4px rgba(220,220,200,0.4);
+}
+.cm-eye-l { left: 32%; }
+.cm-eye-r { right: 32%; }
+.cm-body {
+    position: absolute; bottom: 0; left: 18%; width: 64%; height: 35%;
+    background: linear-gradient(to bottom, #2a2a30, #1a1a20);
+    border-radius: 15% 15% 0 0;
+}
+
+/* --- Goldfish --- */
+.char-goldfish { position: absolute; inset: 0; }
+.cg-tail {
+    position: absolute; top: 28%; right: 10%; width: 22%; height: 38%;
+    background: linear-gradient(135deg, #e09020, #d07818);
+    clip-path: polygon(0% 30%, 100% 0%, 100% 100%, 0% 70%);
+}
+.cg-body {
+    position: absolute; top: 25%; left: 22%; width: 50%; height: 45%;
+    background: radial-gradient(ellipse at 40% 45%, #f0b040, #e09020, #c07010);
+    border-radius: 50% 45% 45% 50%;
+}
+.cg-dorsal {
+    position: absolute; top: 15%; left: 35%; width: 20%; height: 15%;
+    background: linear-gradient(to top, #e09020, #d08018);
+    clip-path: polygon(0% 100%, 50% 0%, 100% 100%);
+}
+.cg-eye {
+    position: absolute; top: 33%; left: 28%; width: 14%; height: 16%;
+    background: radial-gradient(circle at 40% 40%, #fff, #e0e0e0);
+    border-radius: 50%;
+    box-shadow: inset 2px 2px 0 #111;
+}
+.cg-mouth {
+    position: absolute; top: 50%; left: 20%; width: 10%; height: 6%;
+    border: 2px solid #c06010; border-radius: 50%; border-top: none;
+}
+
+/* --- Giant Rabid Rat --- */
+.char-rat { position: absolute; inset: 0; }
+.cr-body {
+    position: absolute; bottom: 8%; left: 20%; width: 55%; height: 38%;
+    background: radial-gradient(ellipse, #6a5a4a, #4a3a2a);
+    border-radius: 50% 40% 40% 50%;
+}
+.cr-head {
+    position: absolute; top: 18%; left: 10%; width: 40%; height: 35%;
+    background: radial-gradient(ellipse at 60% 50%, #5a4a3a, #3a2a1a);
+    border-radius: 35% 50% 45% 40%;
+}
+.cr-ear {
+    position: absolute; width: 16%; height: 18%;
+    background: radial-gradient(circle, #8a6a5a, #5a4a3a);
+    border-radius: 50%;
+}
+.cr-ear-l { top: 10%; left: 15%; }
+.cr-ear-r { top: 8%; left: 35%; }
+.cr-snout {
+    position: absolute; top: 32%; left: 5%; width: 20%; height: 16%;
+    background: linear-gradient(to right, #7a6a5a, #5a4a3a);
+    border-radius: 50% 20% 20% 50%;
+}
+.cr-eye {
+    position: absolute; top: 24%; width: 10%; height: 10%;
+    background: radial-gradient(circle, #ff3030, #cc0000);
+    border-radius: 50%;
+    box-shadow: 0 0 6px rgba(255,0,0,0.5);
+}
+.cr-eye-l { left: 18%; }
+.cr-eye-r { left: 36%; }
+.cr-nose {
+    position: absolute; top: 34%; left: 6%; width: 6%; height: 6%;
+    background: #1a1010; border-radius: 50%;
+}
+.cr-tail {
+    position: absolute; bottom: 15%; right: 8%; width: 25%; height: 6%;
+    background: linear-gradient(to right, #5a4a3a, #4a3a2a, transparent);
+    border-radius: 0 50% 50% 0; transform: rotate(-10deg);
+}
+
+/* --- Scuzmodian Tapeworm --- */
+.char-tapeworm { position: absolute; inset: 0; }
+.ct-seg {
+    position: absolute;
+    background: linear-gradient(to bottom, #7a8a5a, #5a6a3a);
+    border-radius: 40%; border: 1px solid rgba(0,0,0,0.1);
+}
+.ct-seg-1 { top: 35%; left: 25%; width: 22%; height: 25%; }
+.ct-seg-2 { top: 40%; left: 42%; width: 18%; height: 22%; transform: rotate(8deg); }
+.ct-seg-3 { top: 48%; left: 55%; width: 16%; height: 20%; transform: rotate(15deg); }
+.ct-seg-4 { top: 55%; left: 65%; width: 14%; height: 18%; transform: rotate(20deg); }
+.ct-head {
+    position: absolute; top: 18%; left: 10%; width: 24%; height: 28%;
+    background: radial-gradient(ellipse, #8a9a6a, #6a7a4a);
+    border-radius: 45% 45% 35% 35%;
+}
+.ct-eye {
+    position: absolute; top: 22%; width: 8%; height: 8%;
+    background: radial-gradient(circle, #e0e040, #a0a020);
+    border-radius: 50%;
+    box-shadow: 0 0 3px rgba(200,200,0,0.3);
+}
+.ct-eye-l { left: 14%; }
+.ct-eye-r { left: 28%; }
+.ct-mouth {
+    position: absolute; top: 38%; left: 16%; width: 14%; height: 5%;
+    border-bottom: 2px solid #4a5a2a;
+    border-radius: 0 0 50% 50%;
 }
 
 /* Hotspot tooltip */
@@ -926,6 +1116,8 @@ body {
     font-size: 2rem;
     background: var(--cream);
     box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    position: relative;
+    overflow: hidden;
     overflow: hidden;
 }
 
@@ -1177,6 +1369,57 @@ body {
 
 .animate-flicker {
     animation: flickerGlow 2s ease-in-out infinite;
+}
+
+/* ============================================
+   CLOSET ANIMATION
+   ============================================ */
+
+/* Interior layers hidden behind door by default */
+.closet-interior {
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    pointer-events: none;
+}
+.closet-interior.visible {
+    opacity: 1;
+}
+
+/* Closet door — hinge on left side */
+.closet-door {
+    transform-origin: left center;
+    transition: transform 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+                box-shadow 0.7s ease;
+}
+.closet-door.opening {
+    transform: perspective(400px) rotateY(-72deg);
+    box-shadow: 8px 0 16px rgba(0,0,0,0.25), inset -8px 0 12px rgba(0,0,0,0.2);
+}
+
+/* Knob follows the door */
+.closet-knob {
+    transition: opacity 0.3s ease;
+}
+.closet-knob.opening {
+    opacity: 0;
+}
+
+/* Glasses shimmer effect on reveal */
+.closet-glasses {
+    opacity: 0;
+    transition: opacity 0.5s ease;
+}
+.closet-glasses.shimmer {
+    opacity: 1;
+    animation: glassesShimmer 1.2s ease-in-out 1;
+}
+
+@keyframes glassesShimmer {
+    0%   { box-shadow: 0 0 6px rgba(180,200,220,0.5); transform: scale(0.8); }
+    30%  { box-shadow: 0 0 20px rgba(200,220,240,0.8); transform: scale(1.2); }
+    60%  { box-shadow: 0 0 12px rgba(180,200,220,0.6); transform: scale(1.0); }
+    80%  { box-shadow: 0 0 18px rgba(220,240,255,0.7); transform: scale(1.1); }
+    100% { box-shadow: 0 0 6px rgba(180,200,220,0.5); transform: scale(1.0); }
 }
 
 /* ============================================
