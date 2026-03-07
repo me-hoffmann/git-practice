@@ -85,6 +85,9 @@
                 if (layer.html) {
                     el.innerHTML = layer.html;
                 }
+                if (layer.id) {
+                    el.setAttribute('data-layer-id', layer.id);
+                }
                 sceneLayer.appendChild(el);
             }
         }
@@ -114,6 +117,11 @@
                 }, roomId);
                 sceneLayer.appendChild(sewerHs);
             }
+        }
+
+        // If closet was already searched, show it open
+        if (roomId === 'freds_house' && gameState.getFlag('closet_searched')) {
+            applyClosetOpenState();
         }
     }
 
@@ -171,13 +179,17 @@
         label.textContent = hs.label || '';
         el.appendChild(label);
 
-        // Character portrait emoji indicator (visible in scene)
+        // Character portrait indicator (CSS art or emoji fallback)
         if (hs.type === 'character' && hs.characterId) {
             var charDef = FRT3.CharacterDefs[hs.characterId];
-            if (charDef && charDef.portrait) {
+            if (charDef) {
                 var indicator = document.createElement('div');
                 indicator.className = 'character-indicator';
-                indicator.textContent = charDef.portrait;
+                if (charDef.portraitHTML) {
+                    indicator.innerHTML = charDef.portraitHTML;
+                } else if (charDef.portrait) {
+                    indicator.textContent = charDef.portrait;
+                }
                 el.appendChild(indicator);
             }
         }
@@ -413,6 +425,12 @@
     }
 
     function handleSearch(hs, roomId) {
+        // Special animated closet search
+        if (hs.id === 'closet' && roomId === 'freds_house' && !gameState.getFlag('closet_searched')) {
+            animateClosetSearch(hs, roomId);
+            return;
+        }
+
         if (hs.onSearch) {
             hs.onSearch(gameState, eventBus);
             // Refresh scene after search (might reveal new items)
@@ -432,6 +450,69 @@
                 style: 'normal'
             });
         }
+    }
+
+    /**
+     * Apply the open-closet state to DOM (used after buildScene when flag is set)
+     */
+    function applyClosetOpenState() {
+        var door = sceneLayer.querySelector('[data-layer-id="closet-door"]');
+        var knob = sceneLayer.querySelector('[data-layer-id="closet-knob"]');
+        var interiors = sceneLayer.querySelectorAll('.closet-interior');
+
+        if (door) door.classList.add('opening');
+        if (knob) knob.classList.add('opening');
+        for (var i = 0; i < interiors.length; i++) {
+            interiors[i].classList.add('visible');
+        }
+    }
+
+    /**
+     * Animate the closet search experience:
+     * 1. Reveal interior layers
+     * 2. Swing door open with CSS transform
+     * 3. Shimmer glasses into view
+     * 4. Run the original onSearch logic
+     */
+    function animateClosetSearch(hs, roomId) {
+        var door = sceneLayer.querySelector('[data-layer-id="closet-door"]');
+        var knob = sceneLayer.querySelector('[data-layer-id="closet-knob"]');
+        var interiors = sceneLayer.querySelectorAll('.closet-interior');
+        var glasses = sceneLayer.querySelector('[data-layer-id="closet-glasses"]');
+
+        // Step 1: Show interior layers (behind door)
+        for (var i = 0; i < interiors.length; i++) {
+            // Don't show glasses yet — they get their own reveal
+            if (!interiors[i].classList.contains('closet-glasses')) {
+                interiors[i].classList.add('visible');
+            }
+        }
+
+        // Step 2: Swing door open (after a brief pause)
+        setTimeout(function() {
+            if (door) door.classList.add('opening');
+            if (knob) knob.classList.add('opening');
+        }, 200);
+
+        // Step 3: After door opens, shimmer the glasses
+        setTimeout(function() {
+            if (glasses) {
+                glasses.classList.add('visible');
+                glasses.classList.add('shimmer');
+            }
+        }, 900);
+
+        // Step 4: Run the original search logic (adds item, narration, score)
+        setTimeout(function() {
+            if (hs.onSearch) {
+                hs.onSearch(gameState, eventBus);
+            }
+            // Open inventory to show the glasses
+            inventory.open();
+            setTimeout(function() {
+                inventory.close();
+            }, 2500);
+        }, 1200);
     }
 
     function handleTalkTo(hs) {
@@ -462,8 +543,13 @@
             charDef: charDef
         };
 
-        // Set portrait
-        dialoguePort.textContent = charDef ? (charDef.portrait || '') : '';
+        // Set portrait (CSS art or emoji fallback)
+        if (charDef && charDef.portraitHTML) {
+            dialoguePort.innerHTML = charDef.portraitHTML;
+        } else {
+            dialoguePort.innerHTML = '';
+            dialoguePort.textContent = charDef ? (charDef.portrait || '') : '';
+        }
 
         // Show the dialogue overlay
         dialogueOvl.classList.add('active');
@@ -516,6 +602,7 @@
     function endDialogue() {
         activeDialogue = null;
         dialogueOvl.classList.remove('active');
+        dialoguePort.innerHTML = '';
     }
 
     // ========================================

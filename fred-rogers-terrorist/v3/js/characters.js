@@ -12,6 +12,7 @@ window.FRT3.CharacterDefs = {
         name: 'The Goldfish',
         description: 'Two ugly, well-fed goldfish in a tank. They seem to be watching you.',
         portrait: '\uD83D\uDC1F', // 🐟
+        portraitHTML: '<div class="char-goldfish"><div class="cg-tail"></div><div class="cg-body"></div><div class="cg-dorsal"></div><div class="cg-eye"></div><div class="cg-mouth"></div></div>',
         dialogueId: 'goldfish',
         puzzle: {
             acceptedItems: ['fish_food'],
@@ -51,6 +52,7 @@ window.FRT3.CharacterDefs = {
         name: 'The Landlord',
         description: 'A gruff, impatient landlord blocking the porch. He looks like he means business.',
         portrait: '\uD83D\uDE21', // 😡
+        portraitHTML: '<div class="char-landlord"><div class="cl-body"></div><div class="cl-collar"></div><div class="cl-head"><div class="cl-brow cl-brow-l"></div><div class="cl-brow cl-brow-r"></div><div class="cl-eye cl-eye-l"></div><div class="cl-eye cl-eye-r"></div><div class="cl-mouth"></div></div></div>',
         dialogueId: 'landlord',
         puzzle: {
             acceptedItems: ['bundle_of_money', 'dollar_bill'],
@@ -128,6 +130,7 @@ window.FRT3.CharacterDefs = {
         name: 'A Mugger',
         description: 'A threatening figure lurking in the shadows of the alley. He does not look friendly.',
         portrait: '\uD83E\uDD78', // 🥸
+        portraitHTML: '<div class="char-mugger"><div class="cm-body"></div><div class="cm-hood"></div><div class="cm-face"></div><div class="cm-eye cm-eye-l"></div><div class="cm-eye cm-eye-r"></div></div>',
         dialogueId: 'mugger',
         puzzle: {
             acceptedItems: ['bundle_of_money', 'dollar_bill'],
@@ -166,6 +169,7 @@ window.FRT3.CharacterDefs = {
         name: 'Scuzmodian Tapeworm',
         description: 'A hideous worm creature blocking the sewer passage. Its body coils across the entire tunnel.',
         portrait: '\uD83D\uDC1B', // 🐛
+        portraitHTML: '<div class="char-tapeworm"><div class="ct-seg ct-seg-4"></div><div class="ct-seg ct-seg-3"></div><div class="ct-seg ct-seg-2"></div><div class="ct-seg ct-seg-1"></div><div class="ct-head"></div><div class="ct-eye ct-eye-l"></div><div class="ct-eye ct-eye-r"></div><div class="ct-mouth"></div></div>',
         dialogueId: 'tapeworm',
         puzzle: {
             acceptedItems: ['spade'],
@@ -199,6 +203,7 @@ window.FRT3.CharacterDefs = {
         name: 'Giant Rabid Rat',
         description: 'A big, ugly, probably rabid rat. Its red eyes glint in the darkness.',
         portrait: '\uD83D\uDC00', // 🐀
+        portraitHTML: '<div class="char-rat"><div class="cr-tail"></div><div class="cr-body"></div><div class="cr-head"><div class="cr-ear cr-ear-l"></div><div class="cr-ear cr-ear-r"></div><div class="cr-snout"></div><div class="cr-eye cr-eye-l"></div><div class="cr-eye cr-eye-r"></div><div class="cr-nose"></div></div></div>',
         dialogueId: 'rat',
         puzzle: {
             acceptedItems: ['body_slime'],
