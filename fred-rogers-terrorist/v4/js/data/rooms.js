@@ -19,8 +19,7 @@ window.FRT.RoomDefs = {
         zone: 'realworld',
         exits: {
             east: 'fish_room',
-            west: 'front_porch',
-            north: 'kitchen'
+            west: 'front_porch'
         },
         items: ['fish_food'],
         characters: [],
@@ -72,12 +71,6 @@ window.FRT.RoomDefs = {
                 id: 'exit_west', type: 'exit', exitDir: 'west',
                 label: '\u2190 Front Porch',
                 position: { top: '30%', left: '0', width: '8%', height: '35%' }
-            },
-            // Exit north to kitchen
-            {
-                id: 'exit_north', type: 'exit', exitDir: 'north',
-                label: '\u2191 Kitchen',
-                position: { top: '0', left: '38%', width: '24%', height: '8%' }
             },
             // Closet (searchable)
             {
@@ -155,7 +148,8 @@ window.FRT.RoomDefs = {
         description: "The fish tank room. Two oversized goldfish swim in a tank that's definitely too small for them. A strange picture hangs on the wall that nobody has ever been able to explain.",
         zone: 'realworld',
         exits: {
-            west: 'freds_house'
+            west: 'freds_house',
+            east: 'kitchen'
         },
         items: [],
         characters: ['goldfish'],
@@ -197,6 +191,12 @@ window.FRT.RoomDefs = {
                 id: 'exit_west', type: 'exit', exitDir: 'west',
                 label: '\u2190 Fred\'s House',
                 position: { top: '30%', left: '0', width: '8%', height: '35%' }
+            },
+            // Exit east to kitchen
+            {
+                id: 'exit_east', type: 'exit', exitDir: 'east',
+                label: 'Kitchen \u2192',
+                position: { top: '30%', right: '0', width: '8%', height: '35%' }
             },
             // Goldfish
             {
@@ -344,7 +344,7 @@ window.FRT.RoomDefs = {
         description: "Fred's kitchen. It's surprisingly normal except for the cookie jar shaped like a trolley. Something tells you there's more than cookies in there.",
         zone: 'realworld',
         exits: {
-            south: 'freds_house',
+            south: 'fish_room',
             north: 'backyard',
             east: 'bathroom'
         },
@@ -383,7 +383,7 @@ window.FRT.RoomDefs = {
         hotspots: [
             {
                 id: 'exit_south', type: 'exit', exitDir: 'south',
-                label: '\u2193 Fred\'s House',
+                label: '\u2193 Fish Room',
                 position: { bottom: '0', left: '38%', width: '24%', height: '8%' }
             },
             {
@@ -440,7 +440,7 @@ window.FRT.RoomDefs = {
             west: 'neighbors_garden',
             north: 'pbs_lair'
         },
-        items: ['spade'],
+        items: ['axe'],
         characters: [],
         art: {
             background: 'linear-gradient(to bottom, #87CEEB, #a8d8ea 35%, #7cb868 35%)',
@@ -464,7 +464,7 @@ window.FRT.RoomDefs = {
                 // Tree
                 { style: 'top:20%;left:15%;width:20%;height:25%;background:radial-gradient(ellipse,#5a8a3a,#4a7a2a,#3a6a20);border-radius:50%' },
                 { style: 'top:42%;left:23%;width:4%;height:25%;background:linear-gradient(to right,#6b4520,#5a3818,#6b4520)' },
-                // Spade (visible item)
+                // Axe (visible item)
                 { style: 'top:55%;left:60%;width:3%;height:18%;background:linear-gradient(to bottom,#8b6540,#7a5830);border-radius:1px;transform:rotate(15deg)' },
                 { style: 'top:53%;left:59%;width:5%;height:6%;background:linear-gradient(to bottom,#888,#666);border-radius:2px 2px 50% 50%;transform:rotate(15deg)' },
                 { classes: 'scene-vignette' }
@@ -487,9 +487,9 @@ window.FRT.RoomDefs = {
                 position: { top: '0', left: '38%', width: '24%', height: '8%' }
             },
             {
-                id: 'spade_item', type: 'item', itemId: 'spade',
-                label: 'Spade',
-                lookText: 'A sturdy garden spade leaning against the shed. It looks sharp enough to scare something.',
+                id: 'axe_item', type: 'item', itemId: 'axe',
+                label: 'Axe',
+                lookText: 'A small axe leaning against the shed. It looks sharp enough to scare something.',
                 position: { top: '50%', left: '55%', width: '14%', height: '25%' }
             },
             {
@@ -1261,7 +1261,7 @@ window.FRT.RoomDefs = {
                 id: 'glow', type: 'scenery',
                 label: 'Mysterious Glow',
                 lookText: "A faint purple glow emanates from the east. It pulses gently, like a heartbeat. The Land of Make-Believe is close.",
-                position: { top: '25%', right: '0', width: '15%', height: '40%' }
+                position: { top: '20%', right: '12%', width: '12%', height: '30%' }
             }
         ],
         onEnter: function(state, eventBus, data) {

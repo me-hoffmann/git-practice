@@ -36,10 +36,10 @@ window.FRT.ItemDefs = {
 
     // === Phase 2 items ===
 
-    spade: {
-        name: 'Spade',
-        description: 'A sturdy garden spade. Good for digging, and probably intimidating small creatures.',
-        icon: '\uD83E\uDE93', // 🪓 (closest)
+    axe: {
+        name: 'Axe',
+        description: 'A small but sharp axe. Good for chopping wood, and probably intimidating small creatures.',
+        icon: '\uD83E\uDE93',
         takeable: true,
         hidden: false
     },

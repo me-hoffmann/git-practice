@@ -89,7 +89,10 @@
             return;
         }
 
-        if (!room || !room.exits[dir]) {
+        // Support direct target property (used in Make-Believe hotspots)
+        var targetRoomId = hs.target || (room && room.exits[dir]);
+
+        if (!targetRoomId) {
             eventBus.emit('narration:show', {
                 text: "You can't go that way.",
                 style: 'normal'
@@ -97,8 +100,7 @@
             return;
         }
 
-        var targetRoomId = room.exits[dir];
-        navigateToRoom(targetRoomId, dir);
+        navigateToRoom(targetRoomId, dir || 'east');
     }
 
     // ========================================

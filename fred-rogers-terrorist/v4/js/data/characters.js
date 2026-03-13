@@ -199,14 +199,14 @@ window.FRT.CharacterDefs = {
         portraitHTML: '<div class="char-tapeworm"><div class="tw-body"></div><div class="tw-segment s1"></div><div class="tw-segment s2"></div><div class="tw-segment s3"></div><div class="tw-head"></div><div class="tw-eye-l"></div><div class="tw-eye-r"></div><div class="tw-mouth"></div></div>',
         dialogueId: 'tapeworm_talk',
         puzzle: {
-            acceptedItems: ['spade'],
+            acceptedItems: ['axe'],
             onCorrectItem: function(state, eventBus, itemId) {
-                // Spade NOT consumed — just brandished
+                // Axe NOT consumed — just brandished
                 state.addScore(5);
                 state.setFlag('tapeworm_scared', true);
 
                 eventBus.emit('narration:show', {
-                    text: 'You brandish the spade menacingly. The Tapeworm recoils in terror. "SHARP THING! SHARP THING! NOOOO!" It slithers away into a crack in the wall at impressive speed.',
+                    text: 'You brandish the axe menacingly. The Tapeworm recoils in terror. "SHARP THING! SHARP THING! NOOOO!" It slithers away into a crack in the wall at impressive speed.',
                     style: 'character'
                 });
 
