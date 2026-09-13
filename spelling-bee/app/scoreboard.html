@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Spelling Bee &mdash; Scoreboard</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ctext y=%22.9em%22 font-size=%2290%22%3E%F0%9F%90%9D%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="scoreboard.css">
+</head>
+<body>
+<div class="board">
+
+  <div class="head" id="head">
+    <div class="title">Family Spelling <span>Bee</span></div>
+    <div class="round" id="round-label"></div>
+    <div class="worth" id="worth-label"></div>
+  </div>
+
+  <!-- waiting for the pronouncer -->
+  <div class="waiting" id="view-waiting">
+    <div class="big">Scoreboard ready</div>
+    <div class="sub" id="waiting-sub">Share this window on the call. The word being spelled never appears here.</div>
+  </div>
+
+  <!-- live game -->
+  <div class="body hidden" id="view-live">
+    <div>
+      <div class="label" id="now-label">Now spelling</div>
+      <div class="now-name" id="now-name"></div>
+      <div class="on-deck" id="on-deck"></div>
+      <div class="reveal hidden" id="reveal">
+        <div class="verdict" id="reveal-verdict"></div>
+        <div class="spelling" id="reveal-word"></div>
+        <div class="caption" id="reveal-caption"></div>
+      </div>
+    </div>
+    <div>
+      <div class="label">Standings</div>
+      <ul class="scores" id="live-scores"></ul>
+    </div>
+  </div>
+
+  <!-- final -->
+  <div class="champ hidden" id="view-final">
+    <div class="crown" id="final-crown">Winner</div>
+    <div class="names" id="final-names"></div>
+    <div class="sub" id="final-sub"></div>
+    <ul class="scores" id="final-scores"></ul>
+  </div>
+
+</div>
+<script src="scoreboard.js"></script>
+</body>
+</html>
