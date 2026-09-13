@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Family Spelling Bee &mdash; Pronouncer</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ctext y=%22.9em%22 font-size=%2290%22%3E%F0%9F%90%9D%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<div class="wrap">
+
+  <header class="topbar">
+    <div class="brand">Family Spelling <span>Bee</span></div>
+    <button id="btn-scoreboard" class="btn-sm" type="button">Open scoreboard</button>
+    <button id="btn-quit" class="btn-sm hidden" type="button">End game</button>
+  </header>
+
+  <!-- ================= SETUP ================= -->
+  <section id="view-setup">
+    <p class="lede">
+      Eight rounds, worth more as they get harder. Nobody is eliminated &mdash; everyone
+      spells one word a round, and the most points at the end wins.
+    </p>
+
+    <div id="resume-panel" class="panel hidden">
+      <h2>Game in progress</h2>
+      <p class="hint" id="resume-detail"></p>
+      <div class="actions">
+        <button id="btn-resume" class="btn-primary" type="button">Resume game</button>
+        <button id="btn-discard" type="button">Discard it</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Players</h2>
+      <p class="hint">Two to ten. Leave the rest blank. Speller order is reshuffled every round.</p>
+      <div class="name-grid" id="name-grid"></div>
+      <p class="error" id="setup-error"></p>
+      <div class="actions">
+        <button id="btn-start" class="btn-primary" type="button">Start the bee</button>
+        <button id="btn-clear-names" type="button">Clear</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>How it scores</h2>
+      <ul class="rules">
+        <li><b>Rounds 1&ndash;2</b><span>1 point each &mdash; everyday words with one nasty trap</span></li>
+        <li><b>Rounds 3&ndash;4</b><span>2 points each &mdash; educated vocabulary</span></li>
+        <li><b>Rounds 5&ndash;6</b><span>3 points each &mdash; the game starts turning here</span></li>
+        <li><b>Rounds 7&ndash;8</b><span>4 points each &mdash; obscure, then genuinely hard</span></li>
+        <li><b>Perfect game</b><span>20 points. Ties stand &mdash; no extra rounds</span></li>
+      </ul>
+      <p class="bank-note" id="bank-note"></p>
+    </div>
+  </section>
+
+  <!-- ================= PLAY ================= -->
+  <section id="view-game" class="hidden">
+    <div class="game-grid">
+      <div>
+        <div class="round-strip">
+          <span class="round-no" id="round-no">Round 1</span>
+          <span>of 8</span>
+          <span class="pts" id="round-pts"></span>
+          <span class="spacer"></span>
+          <span id="speller-count"></span>
+        </div>
+        <div class="progress"><div id="progress-bar" style="width:0%"></div></div>
+
+        <div class="word-card">
+          <div class="speller">Now spelling &mdash; <b id="speller-name"></b></div>
+          <div class="the-word" id="the-word"></div>
+          <div class="respell" id="respell"></div>
+          <div class="grammar" id="grammar"></div>
+
+          <div id="alert-box" class="alert hidden"></div>
+
+          <dl class="detail-list">
+            <div class="detail"><dt>Origin</dt><dd id="d-origin"></dd></div>
+            <div class="detail"><dt>Definition</dt><dd id="d-definition"></dd></div>
+            <div class="detail"><dt>Sentence</dt><dd class="sentence" id="d-sentence"></dd></div>
+          </dl>
+
+          <div class="judge-row" id="judge-row">
+            <button class="btn-judge btn-correct" id="btn-correct" type="button">
+              Correct<span class="key">C</span>
+            </button>
+            <button class="btn-judge btn-miss" id="btn-miss" type="button">
+              Missed it<span class="key">X</span>
+            </button>
+          </div>
+
+          <div class="verdict hidden" id="verdict">
+            <span class="mark" id="verdict-mark"></span>
+            <span class="note" id="verdict-note"></span>
+            <button class="btn-primary next" id="btn-next" type="button">Next speller &rarr;</button>
+          </div>
+
+          <div class="tool-row">
+            <button class="btn-sm" id="btn-swap" type="button">Swap this word</button>
+            <button class="btn-sm" id="btn-undo" type="button">Undo last ruling</button>
+          </div>
+        </div>
+      </div>
+
+      <aside class="side">
+        <h3>Standings</h3>
+        <ul class="score-list" id="score-list"></ul>
+        <div class="keys">
+          <kbd>C</kbd> correct &nbsp; <kbd>X</kbd> missed<br>
+          <kbd>Space</kbd> next speller<br>
+          <kbd>U</kbd> undo &nbsp; <kbd>S</kbd> swap word
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ================= RESULTS ================= -->
+  <section id="view-done" class="hidden">
+    <div class="panel">
+      <p class="winner-line" id="winner-line"></p>
+      <p class="hint" id="winner-sub"></p>
+      <table class="final">
+        <thead>
+          <tr>
+            <th class="num">#</th><th>Player</th>
+            <th class="num">Correct</th><th class="num">Points</th>
+          </tr>
+        </thead>
+        <tbody id="final-body"></tbody>
+      </table>
+      <div class="actions">
+        <button id="btn-again" class="btn-primary" type="button">New game, same players</button>
+        <button id="btn-newplayers" type="button">Change players</button>
+      </div>
+    </div>
+
+    <div class="panel recap">
+      <h2>Every word</h2>
+      <p class="hint">Worth a look at the ones that got away.</p>
+      <div id="recap"></div>
+    </div>
+  </section>
+
+</div>
+
+<script src="wordbank.js"></script>
+<script src="game.js"></script>
+<script src="storage.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

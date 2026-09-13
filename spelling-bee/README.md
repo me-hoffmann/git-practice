@@ -3,7 +3,17 @@
 A web app for running a family spelling bee over Zoom. One person runs the game
 as the pronouncer; everyone else plays over the call.
 
-Status: **word bank complete - 1,600 words, 200 per round.** The app itself is not built yet.
+Status: **playable.** 1,600 words and a working pronouncer app with a
+screen-shareable scoreboard.
+
+## Running it
+
+Open `app/index.html` in a browser. There is no build step, no install and no
+server - it is plain HTML, CSS and JavaScript, and the word bank is bundled as
+a script so it loads straight from disk.
+
+To put it online instead, serve the `app/` folder from anywhere static
+(GitHub Pages works) - there is no backend to host.
 
 ## The game
 
@@ -106,12 +116,59 @@ Round 8 also contains **floccinaucinihilipilification**, 29 letters, kept
 deliberately for the laugh. Its `notes` field says so; delete the entry if a
 game ever needs a straight face.
 
+## Running a game
+
+**The pronouncer window** (`app/index.html`) shows the word large, with the
+plain-English respelling under it. Origin, definition and sentence sit below at
+a glance rather than as a script to recite, because in a real bee the *speller*
+asks for those. Variant spellings and homophone traps appear in a highlighted
+band before the speller starts.
+
+Judge with **Correct** or **Missed it**, then **Next speller**. Two steps, not
+one, so a misclick is caught before it counts.
+
+| Key | Does |
+| --- | --- |
+| <kbd>C</kbd> | correct |
+| <kbd>X</kbd> | missed |
+| <kbd>Space</kbd> | next speller |
+| <kbd>U</kbd> | undo the last ruling |
+| <kbd>S</kbd> | swap this word for another at the same difficulty |
+
+**The scoreboard** (`app/scoreboard.html`) opens in a second window from the
+**Open scoreboard** button. Share that one on the call. It shows the round, its
+point value, who is spelling, who is next and the live standings - and after a
+ruling it reveals the spelling, so a miss becomes a teaching moment. It never
+receives the upcoming word: the pronouncer window pushes it a view model that
+only ever contains words already ruled on.
+
+Built in because a live game needs them:
+
+- **Undo** steps back across the round boundary, so a misclick on the last
+  speller of a round is still recoverable.
+- **Swap** pulls a replacement from the same round's unused pool, so difficulty
+  stays honest when a word turns out to be unpronounceable or already known.
+- **A refresh does not lose the game.** State is saved after every action; the
+  setup screen offers to resume.
+- **The correct spelling is revealed on a miss**, on the shared scoreboard.
+- **Ties are shown as ties**, sharing rank 1, with no tiebreaker.
+
 ## Tools
 
 ```bash
-node tools/validate.mjs          # correctness + coverage against the 20-game target
-node tools/review-sheet.mjs      # word list by round, for a fast difficulty scan
+node tools/validate.mjs              # correctness + coverage against the 20-game target
+node tools/review-sheet.mjs          # word list by round, for a fast difficulty scan
 node tools/review-sheet.mjs --full   # every field, as the pronouncer will see it
+node tools/test-game.mjs             # headless checks of the scoring and game rules
+node tools/build-wordbank.mjs        # regenerate app/wordbank.js after a word change
+node tools/smoke-test.mjs            # drives the real app in a browser (needs playwright)
+```
+
+**Change a word and the app will not see it until you rebuild.** `app/wordbank.js`
+is generated; `data/words/*.json` stays the source of truth:
+
+```bash
+node tools/validate.mjs && node tools/build-wordbank.mjs
 ```
 
 `validate.mjs` fails the build on anything that would embarrass you mid-game:
@@ -123,3 +180,24 @@ node tools/review-sheet.mjs --full   # every field, as the pronouncer will see i
 - any word duplicated across tiers, alternate spellings included
 
 It also reports how many repeat-free games the current bank supports.
+
+`test-game.mjs` covers the rules rather than the pixels: the points ladder, a
+perfect game of 20, tie handling, undo across round boundaries, word swapping,
+and - the one that actually matters - that twenty consecutive ten-player games
+never repeat a single word. That last check exhausts all 1,600.
+
+## Where the data lives
+
+Everything is in the pronouncer's browser, under two `localStorage` keys.
+
+| Key | Holds |
+| --- | --- |
+| `spellingbee.currentGame` | the game in progress, so a refresh recovers |
+| `spellingbee.history` | which words have been used and in which game, plus a per-player summary of every finished game |
+
+The per-player summary is not displayed anywhere yet. It is written now so that
+the stats-over-time feature is a reporting job later, not a migration.
+
+Because this is browser storage, the no-repeat history belongs to **one browser
+on one machine** - the pronouncer's. Running the game from a different computer
+starts that history over.

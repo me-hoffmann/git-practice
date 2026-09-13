@@ -1,0 +1,98 @@
+/* Built to be screen-shared: large type, heavy weights and high contrast,
+   because Zoom's compression destroys thin light text. */
+:root {
+  --bg: #14110f;
+  --panel: #201b18;
+  --line: #3a312c;
+  --text: #f5efe8;
+  --muted: #a8998d;
+  --gold: #e8b04b;
+  --green: #5fbf7a;
+  --red: #e06c5a;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--text);
+  font: 16px/1.4 "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.board { min-height: 100vh; display: flex; flex-direction: column; padding: 3vh 3vw; gap: 2.4vh; }
+.hidden { display: none !important; }
+
+.head {
+  display: flex; align-items: baseline; gap: 1.4vw; flex-wrap: wrap;
+  border-bottom: 2px solid var(--line); padding-bottom: 1.6vh;
+}
+.head .title { font-size: clamp(20px, 2.2vw, 32px); font-weight: 700; }
+.head .title span { color: var(--gold); }
+.head .round { margin-left: auto; font-size: clamp(18px, 2vw, 28px); color: var(--muted); }
+.head .round b { color: var(--text); }
+.head .worth {
+  font-size: clamp(16px, 1.7vw, 24px); font-weight: 700; color: var(--gold);
+  border: 2px solid var(--gold); border-radius: 999px; padding: .3em 1em;
+}
+
+.body { flex: 1; display: grid; grid-template-columns: minmax(0, 1fr) minmax(300px, 38%); gap: 3vw; align-items: center; align-content: center; }
+
+.label {
+  font-size: clamp(13px, 1.1vw, 17px); letter-spacing: .22em;
+  text-transform: uppercase; color: var(--muted); margin-bottom: .4em;
+}
+.now-name {
+  font-size: clamp(44px, 8vw, 116px); font-weight: 700; line-height: 1.02;
+  letter-spacing: -.02em; overflow-wrap: anywhere; margin-bottom: 3vh;
+}
+.on-deck { font-size: clamp(17px, 1.8vw, 26px); color: var(--muted); }
+.on-deck b { color: var(--text); font-weight: 700; }
+
+.reveal { margin-top: 3.5vh; padding: 2.2vh 2vw; border-radius: 16px; border: 3px solid; }
+.reveal.correct { border-color: #35633f; background: #1a3321; }
+.reveal.miss { border-color: #6b3229; background: #341914; }
+.reveal .verdict {
+  font-size: clamp(20px, 2.4vw, 34px); font-weight: 700; letter-spacing: .1em; margin-bottom: .35em;
+}
+.reveal.correct .verdict { color: var(--green); }
+.reveal.miss .verdict { color: var(--red); }
+.reveal .spelling {
+  font-size: clamp(28px, 4.4vw, 64px); font-weight: 700; letter-spacing: .02em; overflow-wrap: anywhere;
+}
+.reveal .caption { font-size: clamp(14px, 1.3vw, 19px); color: var(--muted); margin-top: .5em; }
+
+.scores { list-style: none; margin: 0; padding: 0; }
+.scores li {
+  display: flex; align-items: center; gap: 1vw;
+  padding: 1.3vh 1.1vw; border-radius: 12px;
+  font-size: clamp(19px, 2.1vw, 31px);
+  border-bottom: 1px solid var(--line);
+}
+.scores li:last-child { border-bottom: 0; }
+.scores li.up { background: var(--panel); box-shadow: inset 4px 0 0 var(--gold); }
+.scores .rank { color: var(--muted); font-size: .72em; width: 1.9em; font-variant-numeric: tabular-nums; flex: none; }
+.scores .who { flex: 1; text-align: left; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.scores li.up .who { font-weight: 700; }
+.scores .pts { font-weight: 700; font-variant-numeric: tabular-nums; }
+.scores li.lead .pts { color: var(--gold); }
+
+.waiting { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; gap: 1.2vh; }
+.waiting .big { font-size: clamp(28px, 4vw, 54px); font-weight: 700; }
+.waiting .sub { color: var(--muted); font-size: clamp(15px, 1.6vw, 22px); max-width: 32ch; }
+
+.champ { text-align: center; flex: 1; display: flex; flex-direction: column; justify-content: center; }
+.champ .crown { font-size: clamp(14px, 1.3vw, 19px); letter-spacing: .3em; text-transform: uppercase; color: var(--muted); }
+.champ .names {
+  font-size: clamp(40px, 7vw, 100px); font-weight: 700; color: var(--gold);
+  line-height: 1.05; margin: .18em 0; overflow-wrap: anywhere;
+}
+.champ .sub { font-size: clamp(17px, 1.9vw, 27px); color: var(--muted); }
+.champ .scores { max-width: 760px; margin: 4vh auto 0; text-align: left; }
+
+@media (max-width: 900px) {
+  .body { grid-template-columns: 1fr; }
+}
