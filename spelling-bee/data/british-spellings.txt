@@ -1,0 +1,37 @@
+# British spellings rejected by the house rule (American spellings only).
+# A denylist of the realistic cases, not a proof - it is a safety net for
+# batch authoring, checked against both "word" and "alsoAccepted".
+# -our
+colour honour favour favourite labour neighbour behaviour harbour humour rumour
+savour vapour valour vigour armour endeavour flavour odour parlour splendour
+tumour clamour candour demeanour rancour saviour succour ardour fervour rigour arbour
+# -re
+centre theatre metre litre fibre sombre spectre calibre lustre meagre sabre
+manoeuvre centimetre kilometre millimetre reconnoitre sepulchre goitre mitre
+nitre philtre saltpetre titre
+# -ce / -se
+defence offence pretence licence practise
+# -ise / -yse
+realise organise recognise apologise criticise memorise emphasise minimise
+maximise summarise specialise sympathise characterise civilise colonise
+dramatise economise fertilise generalise harmonise hypnotise idealise immunise
+legalise modernise normalise optimise oxidise patronise penalise plagiarise
+polarise popularise prioritise privatise publicise randomise rationalise
+satirise scrutinise socialise stabilise standardise sterilise stigmatise
+subsidise symbolise synthesise terrorise theorise urbanise utilise vandalise
+verbalise victimise visualise vocalise proselytise bowdlerise tantalise
+mesmerise galvanise agonise analyse paralyse catalyse hydrolyse organisation
+realisation civilisation globalisation
+# ae / oe digraphs
+haemorrhage haemoglobin anaemia anaesthesia anaesthetic diarrhoea oesophagus
+foetus foetal encyclopaedia mediaeval orthopaedic palaeontology gynaecology
+leukaemia paediatric homoeopathy oestrogen caesium faeces haematology
+# doubled or single L
+travelled travelling traveller cancelled cancelling labelled labelling
+marvellous jeweller jewellery counsellor woollen fuelled modelled signalled
+quarrelled enrol fulfil instal skilful wilful enthral appal distil instil
+# miscellaneous
+aluminium programme grey plough mould moulding moult smoulder kerb tyre pyjamas
+storey cheque gaol draught sulphur aeroplane sceptic sceptical cosy speciality
+judgement acknowledgement abridgement ageing annexe artefact carburettor
+connexion draughtsman furore glycerine moustache yoghurt

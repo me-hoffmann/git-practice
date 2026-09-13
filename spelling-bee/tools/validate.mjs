@@ -21,6 +21,15 @@ const KNOWN_ORIGINS = new Set([
   'Chinese', 'Turkish', 'Persian', 'Malay', 'Hawaiian', 'Nahuatl', 'Algonquian',
 ]);
 
+// House rule: American spellings only. See data/british-spellings.txt.
+const BRITISH = new Set(
+  readFileSync(join(WORDS_DIR, '..', 'british-spellings.txt'), 'utf8')
+    .split('\n')
+    .filter((line) => !line.startsWith('#'))
+    .flatMap((line) => line.trim().split(/\s+/))
+    .filter(Boolean)
+);
+
 const errors = [];
 const warnings = [];
 const seen = new Map(); // lowercased word/variant -> "tier-N"
@@ -101,6 +110,8 @@ for (const file of files) {
     for (const form of [entry.word, ...(entry.alsoAccepted ?? [])]) {
       const key = form?.toLowerCase();
       if (!key) continue;
+      if (BRITISH.has(key)) err(where, `"${form}" is a British spelling; the house rule is American only`);
+      if (!/^[a-z]+$/.test(key)) err(where, `"${form}" must be plain letters - no accents or punctuation to spell aloud`);
       if (seen.has(key)) err(where, `"${form}" already appears in ${seen.get(key)}`);
       else seen.set(key, file);
     }
