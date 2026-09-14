@@ -5,15 +5,50 @@
   var ROUNDS = 8;
   var MAX_PLAYERS = 10;
   var NO_REPEAT_GAMES = 20;
+  var TIERS = 8;
+  var CHOICE_TIER_STEP = 2;
+  var LIFELINE_KINDS = ['letter', 'table', 'pass'];
+
+  var DEFAULT_SETTINGS = { chooseDifficulty: true, lifelines: 3, secondChance: true };
 
   // Rounds 1-2 are worth 1 point, 3-4 are worth 2, and so on up to 4.
   function pointsForRound(round) {
     return Math.ceil(round / 2);
   }
 
-  function perfectScore() {
+  function clampTier(tier) {
+    return Math.min(TIERS, Math.max(1, tier));
+  }
+
+  /* A choice is only offered when it actually changes the word: round 1 has no
+     safer tier to drop to, and round 8 has no harder one to climb to. */
+  function choiceFor(round, key) {
+    var base = pointsForRound(round);
+    if (key === 'safe') {
+      var down = clampTier(round - CHOICE_TIER_STEP);
+      return { key: key, tier: down, points: Math.max(1, base - 1), available: down !== round };
+    }
+    if (key === 'risky') {
+      var up = clampTier(round + CHOICE_TIER_STEP);
+      return { key: key, tier: up, points: base + 2, available: up !== round };
+    }
+    return { key: 'standard', tier: round, points: base, available: true };
+  }
+
+  function choicesForRound(round) {
+    return ['safe', 'standard', 'risky']
+      .map(function (key) { return choiceFor(round, key); })
+      .filter(function (choice) { return choice.available; });
+  }
+
+  /* The most points reachable in a whole game, used to frame a final score.
+     With gambling switched on that is more than the classic 20. */
+  function maxPossible(settings) {
     var total = 0;
-    for (var r = 1; r <= ROUNDS; r++) total += pointsForRound(r);
+    for (var r = 1; r <= ROUNDS; r++) {
+      var risky = choiceFor(r, 'risky');
+      total += (settings && settings.chooseDifficulty && risky.available) ? risky.points : pointsForRound(r);
+    }
     return total;
   }
 
@@ -29,9 +64,9 @@
   }
 
   /* Words used within the last NO_REPEAT_GAMES games are held back. If a tier
-     cannot fill a game under that rule, the least recently used words are
-     released first so a game can always start. */
-  function pickWords(tierWords, count, usedWords, gameNumber) {
+     runs thin the least recently used are released first, so a game always
+     starts. */
+  function tierPool(tierWords, usedWords, gameNumber) {
     var fresh = [];
     var stale = [];
     for (var i = 0; i < tierWords.length; i++) {
@@ -40,15 +75,8 @@
       if (lastUsed === undefined || gameNumber - lastUsed >= NO_REPEAT_GAMES) fresh.push(entry);
       else stale.push(entry);
     }
-    var chosen = shuffle(fresh).slice(0, count);
-    if (chosen.length < count) {
-      stale.sort(function (a, b) { return usedWords[a.word] - usedWords[b.word]; });
-      chosen = chosen.concat(stale.slice(0, count - chosen.length));
-    }
-    var pickedNames = {};
-    for (var c = 0; c < chosen.length; c++) pickedNames[chosen[c].word] = true;
-    var spares = shuffle(fresh.filter(function (e) { return !pickedNames[e.word]; }));
-    return { chosen: chosen, spares: spares };
+    stale.sort(function (a, b) { return usedWords[a.word] - usedWords[b.word]; });
+    return { fresh: shuffle(fresh), stale: stale };
   }
 
   function validateNames(rawNames) {
@@ -67,29 +95,59 @@
     return { ok: true, names: names };
   }
 
-  function createGame(rawNames, wordBank, history) {
-    var check = validateNames(rawNames);
+  /* `roster` is either plain names or {name, lifelines} objects, which is how
+     one player can start with more help than another. */
+  function createGame(roster, wordBank, history, settings) {
+    var entries = roster.map(function (r) { return typeof r === 'string' ? { name: r } : (r || {}); });
+    var check = validateNames(entries.map(function (r) { return r.name; }));
     if (!check.ok) return check;
 
-    var players = check.names.map(function (name, i) {
-      return { id: 'p' + i, name: name };
+    var opts = {
+      chooseDifficulty: settings ? !!settings.chooseDifficulty : DEFAULT_SETTINGS.chooseDifficulty,
+      secondChance: settings ? !!settings.secondChance : DEFAULT_SETTINGS.secondChance,
+      lifelines: settings && settings.lifelines !== undefined ? Math.max(0, settings.lifelines | 0) : DEFAULT_SETTINGS.lifelines
+    };
+
+    var named = entries.filter(function (r) { return String(r.name || '').trim(); });
+    var players = named.map(function (r, i) {
+      var allowance = r.lifelines === undefined || r.lifelines === null ? opts.lifelines : Math.max(0, r.lifelines | 0);
+      return {
+        id: 'p' + i,
+        name: String(r.name).trim(),
+        lifelines: allowance,
+        lifelinesStart: allowance
+      };
     });
 
     var usedWords = (history && history.usedWords) || {};
     var gameNumber = ((history && history.gameCounter) || 0) + 1;
 
+    // One shared pool per tier. Choosing a difficulty or spending a pass draws
+    // from whichever tier the player lands on, so all eight stay stocked.
+    var pool = { fresh: {}, stale: {} };
+    for (var t = 1; t <= TIERS; t++) {
+      var split = tierPool(wordBank[t] || [], usedWords, gameNumber);
+      pool.fresh[t] = split.fresh;
+      pool.stale[t] = split.stale;
+    }
+
     var rounds = [];
-    var spares = {};
     for (var r = 1; r <= ROUNDS; r++) {
-      var picked = pickWords(wordBank[r] || [], players.length, usedWords, gameNumber);
-      spares[r] = picked.spares;
       // Speller order is reshuffled every round so nobody is always last.
       var order = shuffle(players);
       rounds.push({
         round: r,
         points: pointsForRound(r),
-        entries: order.map(function (player, i) {
-          return { playerId: player.id, word: picked.chosen[i], result: null };
+        entries: order.map(function (player) {
+          return {
+            playerId: player.id,
+            word: pool.fresh[r].shift() || pool.stale[r].shift(),
+            choice: null,
+            result: null,
+            secondOptions: null,
+            second: null,
+            lifelinesUsed: []
+          };
         })
       });
     }
@@ -97,14 +155,14 @@
     return {
       ok: true,
       game: {
-        version: 1,
+        version: 2,
         gameNumber: gameNumber,
         startedAt: new Date().toISOString(),
+        settings: opts,
         players: players,
         rounds: rounds,
-        spares: spares,
+        pool: pool,
         cursor: { round: 0, index: 0 },
-        judged: false,
         phase: 'playing'
       }
     };
@@ -119,14 +177,18 @@
     return round ? round.entries[game.cursor.index] || null : null;
   }
 
-  function playerName(game, playerId) {
+  function findPlayer(game, playerId) {
     for (var i = 0; i < game.players.length; i++) {
-      if (game.players[i].id === playerId) return game.players[i].name;
+      if (game.players[i].id === playerId) return game.players[i];
     }
-    return '?';
+    return null;
   }
 
-  /* The entry after the cursor, so the scoreboard can show who is on deck. */
+  function playerName(game, playerId) {
+    var player = findPlayer(game, playerId);
+    return player ? player.name : '?';
+  }
+
   function nextEntry(game) {
     var round = game.cursor.round;
     var index = game.cursor.index + 1;
@@ -139,16 +201,122 @@
     return game.rounds[round].entries[index] || null;
   }
 
-  function judge(game, correct) {
+  /* The whole turn is derived from the entry, so undo only has to clear
+     fields and every screen stays consistent with the saved state. */
+  function turnStage(game) {
+    if (game.phase !== 'playing') return 'over';
     var entry = currentEntry(game);
-    if (!entry || game.judged) return false;
+    if (!entry) return 'over';
+    if (game.settings.chooseDifficulty && !entry.choice) return 'choose';
+    if (!entry.result) return 'spell';
+    if (entry.secondOptions && !entry.second) return 'second';
+    return 'judged';
+  }
+
+  /* Tiers cover for each other. When a tier has no unused words left, a
+     neighbour one step away is a far better substitute than repeating a word
+     somebody has already seen - the difficulty barely moves, and the
+     no-repeat rule survives a table that leans heavily on safe or risky. */
+  function drawWord(game, tier) {
+    var order = [tier];
+    for (var step = 1; step <= 2; step++) {
+      if (tier - step >= 1) order.push(tier - step);
+      if (tier + step <= TIERS) order.push(tier + step);
+    }
+    for (var i = 0; i < order.length; i++) {
+      var fresh = game.pool.fresh[order[i]];
+      if (fresh && fresh.length) return fresh.shift();
+    }
+    for (var j = 0; j < order.length; j++) {
+      var stale = game.pool.stale[order[j]];
+      if (stale && stale.length) return stale.shift();
+    }
+    return null;
+  }
+
+  function returnWord(game, tier, word) {
+    if (word && game.pool.fresh[tier]) game.pool.fresh[tier].push(word);
+  }
+
+  function chooseDifficulty(game, key) {
+    if (turnStage(game) !== 'choose') return false;
+    var round = currentRound(game);
+    var choice = choiceFor(round.round, key);
+    if (!choice.available) return false;
+    var entry = currentEntry(game);
+    if (choice.tier !== round.round) {
+      var replacement = drawWord(game, choice.tier);
+      if (!replacement) return false;
+      returnWord(game, entry.word.tier, entry.word);
+      entry.word = replacement;
+    }
+    entry.choice = choice.key;
+    return true;
+  }
+
+  function activeChoice(game, entry) {
+    return game.settings.chooseDifficulty ? (entry.choice || 'standard') : 'standard';
+  }
+
+  function lifelinesLeft(game, playerId) {
+    var player = findPlayer(game, playerId);
+    return player ? player.lifelines : 0;
+  }
+
+  /* Each kind can be spent once per word: a first letter and a shout from the
+     table on the same word is fair, spending the same help twice is not. */
+  function canUseLifeline(game, kind) {
+    if (LIFELINE_KINDS.indexOf(kind) === -1) return false;
+    if (turnStage(game) !== 'spell') return false;
+    var entry = currentEntry(game);
+    if (entry.lifelinesUsed.indexOf(kind) !== -1) return false;
+    return lifelinesLeft(game, entry.playerId) > 0;
+  }
+
+  function useLifeline(game, kind) {
+    if (!canUseLifeline(game, kind)) return null;
+    var entry = currentEntry(game);
+    var player = findPlayer(game, entry.playerId);
+    if (kind === 'pass') {
+      var replacement = drawWord(game, entry.word.tier);
+      if (!replacement) return null;
+      returnWord(game, entry.word.tier, entry.word);
+      entry.word = replacement;
+    }
+    player.lifelines -= 1;
+    entry.lifelinesUsed.push(kind);
+    return { kind: kind, word: entry.word, remaining: player.lifelines };
+  }
+
+  function judge(game, correct, buildChoices) {
+    var stage = turnStage(game);
+    if (stage !== 'spell') return false;
+    var entry = currentEntry(game);
     entry.result = correct ? 'correct' : 'miss';
-    game.judged = true;
+    if (!correct && game.settings.secondChance && typeof buildChoices === 'function') {
+      entry.secondOptions = buildChoices(entry.word.word);
+    }
+    return true;
+  }
+
+  function answerSecondChance(game, pickedIndex) {
+    if (turnStage(game) !== 'second') return false;
+    var entry = currentEntry(game);
+    entry.second = {
+      picked: pickedIndex,
+      correct: pickedIndex === entry.secondOptions.answer
+    };
+    return true;
+  }
+
+  function skipSecondChance(game) {
+    if (turnStage(game) !== 'second') return false;
+    currentEntry(game).second = { picked: null, correct: false };
     return true;
   }
 
   function advance(game) {
-    if (!game.judged) return false;
+    if (turnStage(game) !== 'judged') return false;
     var round = currentRound(game);
     if (game.cursor.index + 1 < round.entries.length) {
       game.cursor.index += 1;
@@ -159,24 +327,30 @@
       game.phase = 'done';
       game.finishedAt = new Date().toISOString();
     }
-    game.judged = false;
     return true;
   }
 
-  /* Undo steps back over the boundary between rounds, so a misclick on the
-     last speller of a round is still recoverable. */
+  function clearRuling(entry) {
+    entry.result = null;
+    entry.secondOptions = null;
+    entry.second = null;
+  }
+
+  /* Undo throws away the whole ruling on this word in one press, and steps
+     back over the round boundary when this word has not been ruled on yet.
+     Spent lifelines stay spent - they really were used. */
   function undo(game) {
-    if (game.judged) {
-      currentEntry(game).result = null;
-      game.judged = false;
-      return true;
-    }
     if (game.phase === 'done') {
       game.phase = 'playing';
       delete game.finishedAt;
       var last = game.rounds[game.rounds.length - 1];
       game.cursor = { round: game.rounds.length - 1, index: last.entries.length - 1 };
-      currentEntry(game).result = null;
+      clearRuling(currentEntry(game));
+      return true;
+    }
+    var entry = currentEntry(game);
+    if (entry && entry.result) {
+      clearRuling(entry);
       return true;
     }
     if (game.cursor.index > 0) {
@@ -187,38 +361,42 @@
     } else {
       return false;
     }
-    currentEntry(game).result = null;
+    clearRuling(currentEntry(game));
     return true;
   }
 
-  /* Swap pulls a replacement from the same tier's unused pool, so difficulty
-     stays honest when a word turns out to be unpronounceable or already known. */
-  function swapWord(game) {
-    var entry = currentEntry(game);
-    if (!entry || game.judged) return false;
-    var round = currentRound(game);
-    var pool = game.spares[round.round] || [];
-    if (!pool.length) return false;
-    var replacement = pool.shift();
-    pool.push(entry.word);
-    entry.word = replacement;
+  /* A word landed outright pays its choice in full; one recovered on the
+     second chance pays half, rounded up, so it always beats nothing. */
+  function entryPoints(game, round, entry) {
+    var base = choiceFor(round.round, activeChoice(game, entry)).points;
+    if (entry.result === 'correct') return base;
+    if (entry.second && entry.second.correct) return Math.ceil(base / 2);
+    return 0;
+  }
+
+  function entryResolved(entry) {
+    if (!entry.result) return false;
+    if (entry.secondOptions && !entry.second) return false;
     return true;
   }
 
   function standings(game) {
     var byId = {};
     game.players.forEach(function (p) {
-      byId[p.id] = { id: p.id, name: p.name, score: 0, correct: 0, attempted: 0 };
+      byId[p.id] = {
+        id: p.id, name: p.name, score: 0, correct: 0, attempted: 0,
+        recovered: 0, gambles: 0, lifelines: p.lifelines
+      };
     });
     game.rounds.forEach(function (round) {
       round.entries.forEach(function (entry) {
+        if (!entryResolved(entry)) return;
         var row = byId[entry.playerId];
-        if (!entry.result) return;
         row.attempted += 1;
-        if (entry.result === 'correct') {
-          row.score += round.points;
-          row.correct += 1;
-        }
+        if (activeChoice(game, entry) === 'risky') row.gambles += 1;
+        if (entry.result === 'correct') row.correct += 1;
+        else if (entry.second && entry.second.correct) row.recovered += 1;
+        row.score += entryPoints(game, round, entry);
       });
     });
     var rows = game.players.map(function (p) { return byId[p.id]; });
@@ -240,8 +418,7 @@
   }
 
   function winners(game) {
-    var rows = standings(game);
-    return rows.filter(function (row) { return row.rank === 1; });
+    return standings(game).filter(function (row) { return row.rank === 1; });
   }
 
   function progress(game) {
@@ -250,7 +427,7 @@
     game.rounds.forEach(function (round) {
       round.entries.forEach(function (entry) {
         total += 1;
-        if (entry.result) done += 1;
+        if (entryResolved(entry)) done += 1;
       });
     });
     return { done: done, total: total };
@@ -260,18 +437,32 @@
     ROUNDS: ROUNDS,
     MAX_PLAYERS: MAX_PLAYERS,
     NO_REPEAT_GAMES: NO_REPEAT_GAMES,
+    LIFELINE_KINDS: LIFELINE_KINDS,
+    DEFAULT_SETTINGS: DEFAULT_SETTINGS,
+    VERSION: 2,
     pointsForRound: pointsForRound,
-    perfectScore: perfectScore,
+    choiceFor: choiceFor,
+    choicesForRound: choicesForRound,
+    maxPossible: maxPossible,
     validateNames: validateNames,
     createGame: createGame,
     currentRound: currentRound,
     currentEntry: currentEntry,
     nextEntry: nextEntry,
     playerName: playerName,
+    turnStage: turnStage,
+    chooseDifficulty: chooseDifficulty,
+    activeChoice: activeChoice,
+    lifelinesLeft: lifelinesLeft,
+    canUseLifeline: canUseLifeline,
+    useLifeline: useLifeline,
     judge: judge,
+    answerSecondChance: answerSecondChance,
+    skipSecondChance: skipSecondChance,
     advance: advance,
     undo: undo,
-    swapWord: swapWord,
+    entryPoints: entryPoints,
+    entryResolved: entryResolved,
     standings: standings,
     winners: winners,
     progress: progress

@@ -96,3 +96,39 @@ body {
 @media (max-width: 900px) {
   .body { grid-template-columns: 1fr; }
 }
+
+/* ---------- badges: chosen difficulty, helps spent, first letter ---------- */
+.badge-row { display: flex; gap: .8vw; flex-wrap: wrap; margin: -1.6vh 0 2vh; }
+.badge {
+  font-size: clamp(13px, 1.3vw, 19px); letter-spacing: .06em; text-transform: uppercase;
+  padding: .35em 1em; border-radius: 999px; border: 2px solid var(--line); color: var(--muted);
+}
+.badge.safe { border-color: #35633f; color: var(--green); }
+.badge.risky { border-color: var(--gold); color: var(--gold); }
+.badge.letter { border-color: var(--gold); color: var(--gold); font-weight: 700; }
+
+/* ---------- the speller picks their difficulty ---------- */
+.choosing { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1.4vw; margin-top: 2vh; }
+.choosing .opt {
+  border: 3px solid var(--line); border-radius: 16px; padding: 2vh 1.4vw; text-align: center;
+}
+.choosing .opt.safe { border-color: #35633f; }
+.choosing .opt.risky { border-color: var(--gold); }
+.choosing .opt .nm { font-size: clamp(18px, 2vw, 30px); font-weight: 700; }
+.choosing .opt .pt { font-size: clamp(30px, 4vw, 58px); font-weight: 700; color: var(--gold); line-height: 1.1; }
+.choosing .opt .sb { font-size: clamp(13px, 1.2vw, 18px); color: var(--muted); }
+
+/* ---------- second chance: the speller reads these off the screen ---------- */
+.pick-list { margin-top: 3vh; }
+.pick-head {
+  font-size: clamp(15px, 1.6vw, 23px); color: var(--gold); margin-bottom: 1.4vh; font-weight: 700;
+}
+.pick-list ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 1.2vh; }
+.pick-list li {
+  display: flex; align-items: baseline; gap: 1.2vw;
+  border: 3px solid var(--line); border-radius: 14px; padding: 1.4vh 1.6vw;
+  font-size: clamp(24px, 3.4vw, 50px); font-weight: 700; overflow-wrap: anywhere;
+}
+.pick-list .tag { color: var(--gold); font-size: .48em; font-weight: 400; letter-spacing: .12em; flex: none; }
+
+.scores .lives { color: var(--muted); font-size: .6em; flex: none; letter-spacing: .1em; }

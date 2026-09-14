@@ -203,3 +203,62 @@ input[type="text"]:focus { outline: 2px solid var(--gold); outline-offset: 1px; 
   .game-grid { grid-template-columns: 1fr; }
   .side { position: static; }
 }
+
+/* ---------- game options ---------- */
+.opt-list { list-style: none; margin: 0; padding: 0; }
+.opt-list li { padding: 9px 0; border-bottom: 1px solid var(--line); }
+.opt-list li:last-child { border-bottom: 0; }
+.opt-list label { display: flex; align-items: center; gap: 9px; cursor: pointer; }
+.opt-list b { font-weight: 600; }
+.opt-list span { display: block; color: var(--muted); font-size: 14px; margin: 2px 0 0 26px; }
+.opt-list input[type="checkbox"] { width: 17px; height: 17px; accent-color: var(--gold); flex: none; }
+.opt-list input[type="number"] {
+  font: inherit; width: 62px; margin-left: 8px; padding: 5px 8px; border-radius: 6px;
+  border: 1px solid var(--line); background: #16120f; color: var(--text);
+}
+.name-row .lifelines {
+  font: inherit; width: 50px; flex: none; padding: 9px 6px; text-align: center;
+  border-radius: 8px; border: 1px solid var(--line); background: #16120f; color: var(--text);
+}
+
+/* ---------- difficulty choice ---------- */
+.choose-prompt { color: var(--muted); font-size: 15px; margin: 18px 0 14px; }
+.choice-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
+.choice-card {
+  display: block; text-align: left; padding: 16px 16px 14px;
+  border-radius: var(--radius); border: 1px solid var(--line); background: var(--panel-2);
+}
+.choice-card .nm { display: block; font-size: 19px; font-weight: 700; }
+.choice-card .pts { display: block; font-size: 26px; font-weight: 700; color: var(--gold); margin: 6px 0 2px; }
+.choice-card .sub { display: block; color: var(--muted); font-size: 13px; }
+.choice-card .key { display: block; color: var(--muted); font-size: 11px; letter-spacing: .1em; margin-top: 8px; }
+.choice-card.safe:hover:not(:disabled) { border-color: #4a8557; background: #1e3b26; }
+.choice-card.risky:hover:not(:disabled) { border-color: #8b6a3a; background: #3a2f14; }
+
+.chip-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 6px; min-height: 1px; }
+.chip {
+  font-size: 12px; letter-spacing: .08em; text-transform: uppercase;
+  padding: 3px 10px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted);
+}
+.chip.safe { border-color: #35633f; color: #a9e6ba; }
+.chip.risky { border-color: #8b6a3a; color: var(--gold); }
+
+/* ---------- lifelines ---------- */
+.lifeline-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 18px; }
+.lifeline-row .count { color: var(--muted); font-size: 13px; margin-right: 2px; }
+.btn-life { padding: 8px 13px; font-size: 14px; }
+.btn-life .key { color: var(--muted); font-size: 11px; margin-left: 6px; }
+
+/* ---------- second chance ---------- */
+.option-grid { display: grid; gap: 10px; margin-bottom: 12px; }
+.btn-option {
+  display: flex; align-items: baseline; gap: 14px; text-align: left;
+  padding: 14px 16px; font-size: 22px; font-weight: 700;
+}
+.btn-option .tag { color: var(--gold); font-size: 13px; font-weight: 400; letter-spacing: .1em; flex: none; }
+.btn-option:hover:not(:disabled) { border-color: var(--gold); }
+
+/* ---------- results ---------- */
+.final td.num, .final th.num { text-align: right; font-variant-numeric: tabular-nums; }
+.recap .rlist .saved { color: var(--gold); }
+.recap .rlist .tagline { color: var(--muted); font-size: 13px; margin-left: auto; }
