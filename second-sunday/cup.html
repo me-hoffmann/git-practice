@@ -1,0 +1,1000 @@
+<title>The Second Sunday Cup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400..700&family=Familjen+Grotesk:wght@400..700&family=DM+Mono:wght@400;500&display=swap">
+<style>
+  :root {
+    --ground: #E9EDE9;
+    --surface: #F7F9F6;
+    --raised: #FFFFFF;
+    --ink: #15292A;
+    --ink-soft: #47605F;
+    --ink-faint: #7A908E;
+    --rule: #C7D1CB;
+    --rule-soft: #DAE1DB;
+    --brass: #8F6415;
+    --brass-fill: #A8761E;
+    --on-brass: #FBF7EE;
+    --teal: #1F6F6B;
+    --focus: #1F6F6B;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #0F1B1C;
+      --surface: #17282A;
+      --raised: #1D3032;
+      --ink: #E5ECE7;
+      --ink-soft: #A2B4B1;
+      --ink-faint: #6E8482;
+      --rule: #2B3F40;
+      --rule-soft: #223335;
+      --brass: #DFAC4E;
+      --brass-fill: #C2903A;
+      --on-brass: #14201A;
+      --teal: #5FC4BC;
+      --focus: #5FC4BC;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --ground: #0F1B1C;
+    --surface: #17282A;
+    --raised: #1D3032;
+    --ink: #E5ECE7;
+    --ink-soft: #A2B4B1;
+    --ink-faint: #6E8482;
+    --rule: #2B3F40;
+    --rule-soft: #223335;
+    --brass: #DFAC4E;
+    --brass-fill: #C2903A;
+    --on-brass: #14201A;
+    --teal: #5FC4BC;
+    --focus: #5FC4BC;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    background: var(--ground);
+    color: var(--ink);
+    font-family: "Familjen Grotesk", ui-sans-serif, system-ui, sans-serif;
+    font-size: 16px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .page {
+    max-width: 720px;
+    margin: 0 auto;
+    padding-inline: 20px;
+    padding-block: 40px 80px;
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+  }
+
+  .eyebrow {
+    font-family: "DM Mono", ui-monospace, monospace;
+    font-size: 11.5px;
+    font-weight: 500;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+
+  h1 {
+    font-family: "Fraunces", Georgia, serif;
+    font-optical-sizing: auto;
+    font-weight: 600;
+    font-size: clamp(2.5rem, 9vw, 3.6rem);
+    line-height: 0.96;
+    letter-spacing: -0.022em;
+    margin: 8px 0 0;
+  }
+
+  h2 {
+    font-family: "Fraunces", Georgia, serif;
+    font-optical-sizing: auto;
+    font-weight: 600;
+    font-size: 1.4rem;
+    line-height: 1.2;
+    letter-spacing: -0.012em;
+    margin: 0;
+  }
+
+  h3 { font-size: 1rem; font-weight: 700; margin: 0; }
+
+  header { border-bottom: 1px solid var(--rule); padding-bottom: 26px; }
+
+  section { display: flex; flex-direction: column; gap: 18px; }
+
+  .sec-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  /* ---------- next up ---------- */
+
+  .nextup {
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    padding: 18px 20px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px 28px;
+  }
+
+  @media (max-width: 520px) { .nextup { grid-template-columns: 1fr; gap: 16px; } }
+
+  .nu-item { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+
+  .nu-label {
+    font-family: "DM Mono", monospace;
+    font-size: 10.5px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+
+  .nu-value {
+    font-family: "Fraunces", Georgia, serif;
+    font-size: 1.32rem;
+    font-weight: 600;
+    line-height: 1.15;
+    letter-spacing: -0.01em;
+    overflow-wrap: anywhere;
+  }
+
+  .nu-value.brass { color: var(--brass); }
+  .nu-sub { font-size: 13.5px; color: var(--ink-soft); }
+
+  /* ---------- standings ---------- */
+
+  .standings { display: flex; flex-direction: column; }
+
+  .srow {
+    display: grid;
+    grid-template-columns: 30px 1fr auto 62px;
+    gap: 14px;
+    align-items: center;
+    padding: 14px 0;
+    border-top: 1px solid var(--rule-soft);
+  }
+
+  .standings .srow:last-child { border-bottom: 1px solid var(--rule-soft); }
+
+  .srow.leader .sname { color: var(--brass); font-weight: 700; }
+
+  .srank {
+    font-family: "DM Mono", monospace;
+    font-size: 13px;
+    color: var(--ink-faint);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .sname { font-size: 17px; font-weight: 600; overflow-wrap: anywhere; }
+
+  .sbreak {
+    font-family: "DM Mono", monospace;
+    font-size: 11.5px;
+    color: var(--ink-faint);
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+  }
+
+  .spts {
+    font-family: "DM Mono", monospace;
+    font-size: 19px;
+    font-weight: 500;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    color: var(--ink);
+  }
+
+  .srow.leader .spts { color: var(--brass); }
+
+  @media (max-width: 460px) {
+    .srow { grid-template-columns: 26px 1fr 56px; gap: 10px; }
+    .sbreak { grid-column: 2 / 3; grid-row: 2; }
+    .srow { row-gap: 2px; }
+  }
+
+  /* ---------- generic controls ---------- */
+
+  button {
+    font-family: "Familjen Grotesk", sans-serif;
+    cursor: pointer;
+  }
+
+  button:focus-visible, input:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+
+  .btn {
+    font-family: "DM Mono", monospace;
+    font-size: 11.5px;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    padding: 9px 15px;
+    border-radius: 2px;
+    border: 1px solid var(--rule);
+    background: transparent;
+    color: var(--ink-soft);
+  }
+
+  .btn:hover { color: var(--ink); border-color: var(--ink-faint); }
+
+  .btn-primary {
+    background: var(--brass-fill);
+    border-color: var(--brass-fill);
+    color: var(--on-brass);
+    font-weight: 500;
+  }
+
+  .btn-primary:hover { color: var(--on-brass); opacity: 0.9; }
+  .btn[disabled] { opacity: 0.45; cursor: not-allowed; }
+
+  input[type="text"], input[type="date"] {
+    font-family: "Familjen Grotesk", sans-serif;
+    font-size: 15px;
+    padding: 9px 11px;
+    background: var(--raised);
+    border: 1px solid var(--rule);
+    border-radius: 2px;
+    color: var(--ink);
+    min-width: 0;
+    width: 100%;
+  }
+
+  /* ---------- record panel ---------- */
+
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  .field { display: flex; flex-direction: column; gap: 7px; }
+
+  .field-label {
+    font-family: "DM Mono", monospace;
+    font-size: 10.5px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+
+  .chips { display: flex; flex-wrap: wrap; gap: 7px; }
+
+  .chip {
+    font-size: 13px;
+    padding: 6px 12px;
+    border-radius: 999px;
+    border: 1px solid var(--rule);
+    background: transparent;
+    color: var(--ink-soft);
+  }
+
+  .chip:hover { border-color: var(--ink-faint); color: var(--ink); }
+
+  .who { display: flex; flex-direction: column; }
+
+  .who-row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 12px;
+    align-items: center;
+    padding: 9px 0;
+    border-top: 1px solid var(--rule-soft);
+  }
+
+  .who-row:last-child { border-bottom: 1px solid var(--rule-soft); }
+
+  .who-name {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    background: transparent;
+    border: 0;
+    padding: 4px 0;
+    font-size: 16px;
+    color: var(--ink-faint);
+    text-align: left;
+    min-width: 0;
+  }
+
+  .tick {
+    width: 22px;
+    height: 22px;
+    flex: none;
+    border: 1.5px solid var(--rule);
+    border-radius: 3px;
+    display: grid;
+    place-items: center;
+    font-size: 13px;
+    color: transparent;
+    line-height: 1;
+  }
+
+  .who-row.present .who-name { color: var(--ink); font-weight: 600; }
+  .who-row.present .tick {
+    background: var(--teal);
+    border-color: var(--teal);
+    color: var(--ground);
+  }
+
+  .roles { display: flex; gap: 6px; }
+
+  .role {
+    font-family: "DM Mono", monospace;
+    font-size: 10.5px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 5px 10px;
+    border-radius: 2px;
+    border: 1px solid var(--rule);
+    background: transparent;
+    color: var(--ink-faint);
+  }
+
+  .role:hover:not([disabled]) { color: var(--ink); border-color: var(--ink-faint); }
+  .role[disabled] { opacity: 0.3; cursor: not-allowed; }
+
+  .role.on {
+    background: var(--brass-fill);
+    border-color: var(--brass-fill);
+    color: var(--on-brass);
+    font-weight: 500;
+  }
+
+  .panel-actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .hint { font-size: 13.5px; color: var(--ink-faint); }
+
+  /* ---------- log ---------- */
+
+  .log { display: flex; flex-direction: column; }
+
+  .log-row {
+    display: grid;
+    grid-template-columns: 92px 1fr auto;
+    gap: 14px;
+    align-items: baseline;
+    padding: 12px 0;
+    border-top: 1px solid var(--rule-soft);
+    font-size: 14.5px;
+  }
+
+  .log .log-row:last-child { border-bottom: 1px solid var(--rule-soft); }
+
+  .log-date {
+    font-family: "DM Mono", monospace;
+    font-size: 12.5px;
+    color: var(--ink-faint);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .log-what { color: var(--ink); overflow-wrap: anywhere; }
+  .log-who { color: var(--ink-soft); font-size: 13px; }
+
+  .del {
+    background: transparent;
+    border: 0;
+    color: var(--ink-faint);
+    font-size: 16px;
+    padding: 0 4px;
+    line-height: 1;
+  }
+  .del:hover { color: var(--brass); }
+
+  @media (max-width: 480px) {
+    .log-row { grid-template-columns: 1fr auto; }
+    .log-date { grid-column: 1 / -1; }
+  }
+
+  /* ---------- scoring key ---------- */
+
+  .key {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 22px;
+    font-family: "DM Mono", monospace;
+    font-size: 12.5px;
+    color: var(--ink-faint);
+  }
+
+  .key b { color: var(--brass); font-weight: 500; }
+
+  /* ---------- roster ---------- */
+
+  .roster-list { display: flex; flex-wrap: wrap; gap: 7px; }
+
+  .person {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13.5px;
+    padding: 5px 8px 5px 12px;
+    border: 1px solid var(--rule);
+    border-radius: 999px;
+    color: var(--ink-soft);
+  }
+
+  .add-row { display: flex; gap: 8px; align-items: stretch; }
+  .add-row input { flex: 1; }
+
+  details > summary {
+    cursor: pointer;
+    font-family: "DM Mono", monospace;
+    font-size: 11.5px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    list-style: none;
+  }
+  details > summary::-webkit-details-marker { display: none; }
+  details > summary:hover { color: var(--ink); }
+  details[open] > summary { margin-bottom: 16px; }
+
+  .status {
+    font-family: "DM Mono", monospace;
+    font-size: 12px;
+    color: var(--ink-faint);
+  }
+
+  .status.warn { color: var(--brass); }
+
+  .empty {
+    color: var(--ink-soft);
+    font-size: 15px;
+    padding: 18px 0;
+    border-top: 1px solid var(--rule-soft);
+    border-bottom: 1px solid var(--rule-soft);
+  }
+
+  footer {
+    border-top: 1px solid var(--rule);
+    padding-top: 20px;
+    font-size: 13.5px;
+    color: var(--ink-faint);
+  }
+
+  [hidden] { display: none !important; }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+  }
+</style>
+
+<div class="page">
+
+  <header>
+    <div class="eyebrow">Second Sunday</div>
+    <h1>The Cup</h1>
+  </header>
+
+  <section>
+    <div class="nextup">
+      <div class="nu-item">
+        <div class="nu-label">Next Second Sunday</div>
+        <div class="nu-value" id="next-date">—</div>
+      </div>
+      <div class="nu-item">
+        <div class="nu-label">Picks the activity</div>
+        <div class="nu-value brass" id="next-picker">Nobody yet</div>
+        <div class="nu-sub" id="next-picker-sub">The first night has no winner to hand off from — whoever starts it picks.</div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <h2>Standings</h2>
+      <div class="status" id="status">Connecting…</div>
+    </div>
+    <div class="standings" id="standings"></div>
+    <div class="empty" id="standings-empty">No nights recorded yet. The table fills in the first time someone records one.</div>
+    <div class="key">
+      <span>Here <b>5</b></span>
+      <span>Won <b>+4</b></span>
+      <span>Drove <b>+5</b></span>
+      <span id="key-year"></span>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <h2>Record a night</h2>
+      <button class="btn" id="toggle-record" type="button">Open</button>
+    </div>
+    <div class="panel" id="record-panel" hidden>
+      <div class="field">
+        <label class="field-label" for="night-date">Date</label>
+        <input type="date" id="night-date">
+      </div>
+      <div class="field">
+        <label class="field-label" for="night-activity">What you played</label>
+        <input type="text" id="night-activity" placeholder="Spelling bee" autocomplete="off">
+        <div class="chips" id="activity-chips">
+          <button class="chip" type="button">Spelling bee</button>
+          <button class="chip" type="button">Scavenger hunt</button>
+          <button class="chip" type="button">Trivia</button>
+          <button class="chip" type="button">Talent show</button>
+        </div>
+      </div>
+      <div class="field">
+        <span class="field-label">Who was there</span>
+        <div class="hint">Tap a name to mark them present. Then mark who won and who drove.</div>
+        <div class="who" id="who"></div>
+      </div>
+      <div class="panel-actions">
+        <button class="btn btn-primary" id="save-night" type="button">Save night</button>
+        <button class="btn" id="cancel-night" type="button">Cancel</button>
+        <span class="hint" id="save-hint"></span>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Nights</h2>
+    <div class="log" id="log"></div>
+    <div class="empty" id="log-empty">Nothing yet.</div>
+  </section>
+
+  <section>
+    <details id="roster-details">
+      <summary>The family · <span id="roster-count">0</span></summary>
+      <div class="panel">
+        <div class="field">
+          <span class="field-label">Everyone who plays</span>
+          <div class="roster-list" id="roster-list"></div>
+        </div>
+        <div class="field">
+          <label class="field-label" for="new-name">Add someone</label>
+          <div class="add-row">
+            <input type="text" id="new-name" placeholder="Name" autocomplete="off">
+            <button class="btn" id="add-person" type="button">Add</button>
+          </div>
+        </div>
+        <div class="hint">Removing someone keeps the nights they played in — it only takes them off future lists.</div>
+      </div>
+    </details>
+  </section>
+
+  <footer>
+    <p>Points reset each January. Driving is worth more than winning because driving is the work.</p>
+  </footer>
+
+</div>
+
+<script>
+(function () {
+  var MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+  var PTS = { here: 5, won: 4, drove: 5 };
+
+  var db = null;
+  var roster = [];   // [{id, name}]
+  var nights = [];   // [{id, date, activity, present[], winner, driver}]
+  var draft = { present: {}, winner: null, driver: null };
+
+  var el = function (id) { return document.getElementById(id); };
+
+  /* ---------- dates ---------- */
+
+  function secondSunday(y, m) {
+    var firstDow = new Date(y, m, 1).getDay();
+    return new Date(y, m, 1 + ((7 - firstDow) % 7) + 7);
+  }
+
+  function nextSecondSunday() {
+    var today = new Date();
+    today.setHours(0, 0, 0, 0);
+    var y = today.getFullYear(), m = today.getMonth();
+    var d = secondSunday(y, m);
+    if (d < today) {
+      m += 1;
+      if (m > 11) { m = 0; y += 1; }
+      d = secondSunday(y, m);
+    }
+    return d;
+  }
+
+  function iso(d) {
+    return d.getFullYear() + "-" +
+      String(d.getMonth() + 1).padStart(2, "0") + "-" +
+      String(d.getDate()).padStart(2, "0");
+  }
+
+  function prettyDate(isoStr) {
+    var p = String(isoStr).split("-");
+    if (p.length !== 3) return isoStr;
+    return MONTHS[Number(p[1]) - 1].slice(0, 3) + " " + Number(p[2]) + ", " + p[0];
+  }
+
+  /* ---------- derived ---------- */
+
+  function nameOf(id) {
+    for (var i = 0; i < roster.length; i++) if (roster[i].id === id) return roster[i].name;
+    return null;
+  }
+
+  function thisYearNights() {
+    var y = String(new Date().getFullYear());
+    return nights.filter(function (n) { return String(n.date).slice(0, 4) === y; });
+  }
+
+  function standings() {
+    var rows = {};
+    function row(id) {
+      if (!rows[id]) rows[id] = { id: id, pts: 0, nights: 0, wins: 0, drives: 0 };
+      return rows[id];
+    }
+    thisYearNights().forEach(function (n) {
+      (n.present || []).forEach(function (id) {
+        var r = row(id);
+        r.pts += PTS.here;
+        r.nights += 1;
+      });
+      if (n.winner) { var w = row(n.winner); w.pts += PTS.won; w.wins += 1; }
+      if (n.driver) { var d = row(n.driver); d.pts += PTS.drove; d.drives += 1; }
+    });
+    return Object.keys(rows)
+      .map(function (k) { return rows[k]; })
+      .filter(function (r) { return nameOf(r.id) !== null; })
+      .sort(function (a, b) {
+        if (b.pts !== a.pts) return b.pts - a.pts;
+        if (b.nights !== a.nights) return b.nights - a.nights;
+        return (nameOf(a.id) || "").localeCompare(nameOf(b.id) || "");
+      });
+  }
+
+  function sortedNights() {
+    return nights.slice().sort(function (a, b) {
+      return String(b.date).localeCompare(String(a.date));
+    });
+  }
+
+  /* ---------- render ---------- */
+
+  function renderNextUp() {
+    var d = nextSecondSunday();
+    el("next-date").textContent = MONTHS[d.getMonth()] + " " + d.getDate();
+
+    var recent = sortedNights()[0];
+    var picker = recent && recent.winner ? nameOf(recent.winner) : null;
+    if (picker) {
+      el("next-picker").textContent = picker;
+      el("next-picker-sub").textContent =
+        "Won " + prettyDate(recent.date) + ". They pick the activity and pick who drives it.";
+    } else {
+      el("next-picker").textContent = "Nobody yet";
+      el("next-picker-sub").textContent =
+        "No winner recorded yet — whoever starts it picks.";
+    }
+  }
+
+  function renderStandings() {
+    var rows = standings();
+    var box = el("standings");
+    box.textContent = "";
+    el("standings-empty").hidden = rows.length > 0;
+    el("key-year").textContent = new Date().getFullYear() + " season";
+
+    rows.forEach(function (r, i) {
+      var div = document.createElement("div");
+      div.className = "srow" + (i === 0 && r.pts > 0 ? " leader" : "");
+
+      var rank = document.createElement("div");
+      rank.className = "srank";
+      rank.textContent = i + 1;
+
+      var name = document.createElement("div");
+      name.className = "sname";
+      name.textContent = nameOf(r.id);
+
+      var brk = document.createElement("div");
+      brk.className = "sbreak";
+      var bits = [r.nights + (r.nights === 1 ? " night" : " nights")];
+      if (r.wins) bits.push(r.wins + (r.wins === 1 ? " win" : " wins"));
+      if (r.drives) bits.push(r.drives + (r.drives === 1 ? " drive" : " drives"));
+      brk.textContent = bits.join(" · ");
+
+      var pts = document.createElement("div");
+      pts.className = "spts";
+      pts.textContent = r.pts;
+
+      div.appendChild(rank);
+      div.appendChild(name);
+      div.appendChild(brk);
+      div.appendChild(pts);
+      box.appendChild(div);
+    });
+  }
+
+  function renderLog() {
+    var list = sortedNights();
+    var box = el("log");
+    box.textContent = "";
+    el("log-empty").hidden = list.length > 0;
+
+    list.forEach(function (n) {
+      var row = document.createElement("div");
+      row.className = "log-row";
+
+      var date = document.createElement("div");
+      date.className = "log-date";
+      date.textContent = prettyDate(n.date);
+
+      var mid = document.createElement("div");
+      var what = document.createElement("div");
+      what.className = "log-what";
+      what.textContent = n.activity || "Second Sunday";
+      var who = document.createElement("div");
+      who.className = "log-who";
+      var parts = [];
+      var wn = n.winner ? nameOf(n.winner) : null;
+      var dn = n.driver ? nameOf(n.driver) : null;
+      if (wn) parts.push(wn + " won");
+      if (dn) parts.push(dn + " drove");
+      parts.push((n.present || []).length + " there");
+      who.textContent = parts.join(" · ");
+      mid.appendChild(what);
+      mid.appendChild(who);
+
+      var del = document.createElement("button");
+      del.className = "del";
+      del.type = "button";
+      del.textContent = "×";
+      del.title = "Delete this night";
+      del.setAttribute("aria-label", "Delete " + prettyDate(n.date));
+      del.addEventListener("click", function () { removeNight(n.id, n.date); });
+
+      row.appendChild(date);
+      row.appendChild(mid);
+      row.appendChild(del);
+      box.appendChild(row);
+    });
+  }
+
+  function renderRoster() {
+    var box = el("roster-list");
+    box.textContent = "";
+    el("roster-count").textContent = roster.length;
+
+    roster.forEach(function (p) {
+      var span = document.createElement("span");
+      span.className = "person";
+      span.appendChild(document.createTextNode(p.name));
+      var x = document.createElement("button");
+      x.className = "del";
+      x.type = "button";
+      x.textContent = "×";
+      x.setAttribute("aria-label", "Remove " + p.name);
+      x.addEventListener("click", function () { removePerson(p.id, p.name); });
+      span.appendChild(x);
+      box.appendChild(span);
+    });
+
+    if (!roster.length) {
+      var hint = document.createElement("span");
+      hint.className = "hint";
+      hint.textContent = "Nobody added yet.";
+      box.appendChild(hint);
+    }
+  }
+
+  function renderWho() {
+    var box = el("who");
+    box.textContent = "";
+
+    roster.forEach(function (p) {
+      var present = !!draft.present[p.id];
+
+      var row = document.createElement("div");
+      row.className = "who-row" + (present ? " present" : "");
+
+      var nameBtn = document.createElement("button");
+      nameBtn.className = "who-name";
+      nameBtn.type = "button";
+      nameBtn.setAttribute("aria-pressed", present ? "true" : "false");
+      var tick = document.createElement("span");
+      tick.className = "tick";
+      tick.textContent = "✓";
+      tick.setAttribute("aria-hidden", "true");
+      nameBtn.appendChild(tick);
+      nameBtn.appendChild(document.createTextNode(p.name));
+      nameBtn.addEventListener("click", function () {
+        if (draft.present[p.id]) {
+          delete draft.present[p.id];
+          if (draft.winner === p.id) draft.winner = null;
+          if (draft.driver === p.id) draft.driver = null;
+        } else {
+          draft.present[p.id] = true;
+        }
+        renderWho();
+      });
+
+      var roles = document.createElement("div");
+      roles.className = "roles";
+      [["won", "winner"], ["drove", "driver"]].forEach(function (pair) {
+        var b = document.createElement("button");
+        b.className = "role" + (draft[pair[1]] === p.id ? " on" : "");
+        b.type = "button";
+        b.textContent = pair[0];
+        b.disabled = !present;
+        b.setAttribute("aria-pressed", draft[pair[1]] === p.id ? "true" : "false");
+        b.addEventListener("click", function () {
+          draft[pair[1]] = draft[pair[1]] === p.id ? null : p.id;
+          renderWho();
+        });
+        roles.appendChild(b);
+      });
+
+      row.appendChild(nameBtn);
+      row.appendChild(roles);
+      box.appendChild(row);
+    });
+
+    if (!roster.length) {
+      var hint = document.createElement("div");
+      hint.className = "hint";
+      hint.textContent = "Add the family below first.";
+      box.appendChild(hint);
+    }
+  }
+
+  function renderAll() {
+    renderNextUp();
+    renderStandings();
+    renderLog();
+    renderRoster();
+    if (!el("record-panel").hidden) renderWho();
+  }
+
+  /* ---------- status ---------- */
+
+  function setStatus(text, warn) {
+    var s = el("status");
+    s.textContent = text;
+    s.className = warn ? "status warn" : "status";
+  }
+
+  function offline(msg) {
+    setStatus(msg, true);
+    el("save-night").disabled = true;
+    el("add-person").disabled = true;
+    el("save-hint").textContent = "Saving is off in this view.";
+  }
+
+  /* ---------- writes ---------- */
+
+  function addPerson() {
+    var input = el("new-name");
+    var name = input.value.trim();
+    if (!name || !db) return;
+    input.value = "";
+    db.collection("roster").add({ name: name, added: new Date().toISOString() })
+      .catch(function (e) { setStatus("Could not add: " + e.code, true); });
+  }
+
+  function removePerson(id, name) {
+    if (!db) return;
+    if (!window.confirm("Take " + name + " off the list? Nights they already played still count.")) return;
+    db.doc("roster/" + id).delete()
+      .catch(function (e) { setStatus("Could not remove: " + e.code, true); });
+  }
+
+  function removeNight(id, date) {
+    if (!db) return;
+    if (!window.confirm("Delete " + prettyDate(date) + "? Points from that night go away.")) return;
+    db.doc("nights/" + id).delete()
+      .catch(function (e) { setStatus("Could not delete: " + e.code, true); });
+  }
+
+  function saveNight() {
+    if (!db) return;
+    var present = Object.keys(draft.present);
+    if (!present.length) {
+      el("save-hint").textContent = "Mark at least one person present.";
+      return;
+    }
+    var btn = el("save-night");
+    btn.disabled = true;
+    el("save-hint").textContent = "Saving…";
+
+    db.collection("nights").add({
+      date: el("night-date").value || iso(nextSecondSunday()),
+      activity: el("night-activity").value.trim(),
+      present: present,
+      winner: draft.winner,
+      driver: draft.driver,
+      recorded: new Date().toISOString()
+    }).then(function () {
+      draft = { present: {}, winner: null, driver: null };
+      el("night-activity").value = "";
+      el("record-panel").hidden = true;
+      el("toggle-record").textContent = "Open";
+      el("save-hint").textContent = "";
+      btn.disabled = false;
+    }).catch(function (e) {
+      el("save-hint").textContent = "Didn't save (" + e.code + "). Try again.";
+      btn.disabled = false;
+    });
+  }
+
+  /* ---------- wiring ---------- */
+
+  el("night-date").value = iso(nextSecondSunday());
+
+  el("toggle-record").addEventListener("click", function () {
+    var panel = el("record-panel");
+    panel.hidden = !panel.hidden;
+    this.textContent = panel.hidden ? "Open" : "Close";
+    if (!panel.hidden) renderWho();
+  });
+
+  el("cancel-night").addEventListener("click", function () {
+    draft = { present: {}, winner: null, driver: null };
+    el("record-panel").hidden = true;
+    el("toggle-record").textContent = "Open";
+    el("save-hint").textContent = "";
+  });
+
+  el("save-night").addEventListener("click", saveNight);
+  el("add-person").addEventListener("click", addPerson);
+  el("new-name").addEventListener("keydown", function (e) {
+    if (e.key === "Enter") { e.preventDefault(); addPerson(); }
+  });
+
+  Array.prototype.forEach.call(el("activity-chips").children, function (chip) {
+    chip.addEventListener("click", function () {
+      el("night-activity").value = chip.textContent;
+    });
+  });
+
+  renderAll();
+
+  /* ---------- connect ---------- */
+
+  claude.use("db").then(function (store) {
+    if (!store) { offline("Standings can't load in this view."); return; }
+    db = store;
+    setStatus("Live");
+
+    db.collection("roster").onSnapshot(function (snap) {
+      roster = snap.docs.map(function (d) {
+        return { id: d.id, name: String(d.data().name || "") };
+      }).sort(function (a, b) { return a.name.localeCompare(b.name); });
+      renderAll();
+    }, function (e) { offline("Roster stopped updating (" + e.code + "). Reload."); });
+
+    db.collection("nights").onSnapshot(function (snap) {
+      nights = snap.docs.map(function (d) {
+        var v = d.data();
+        return {
+          id: d.id,
+          date: String(v.date || ""),
+          activity: String(v.activity || ""),
+          present: Array.isArray(v.present) ? v.present : [],
+          winner: v.winner || null,
+          driver: v.driver || null
+        };
+      });
+      renderAll();
+    }, function (e) { offline("Nights stopped updating (" + e.code + "). Reload."); });
+  }, function () { offline("Standings can't load in this view."); });
+})();
+</script>
