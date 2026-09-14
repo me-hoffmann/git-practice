@@ -11,6 +11,13 @@
     el('view-final').classList.toggle('hidden', which !== 'final');
   }
 
+  function badge(text, kind) {
+    var span = document.createElement('span');
+    span.className = 'badge' + (kind ? ' ' + kind : '');
+    span.textContent = text;
+    return span;
+  }
+
   function scoreRows(target, standings, currentName) {
     target.innerHTML = '';
     standings.forEach(function (row) {
@@ -32,6 +39,12 @@
 
       li.appendChild(rank);
       li.appendChild(who);
+      if (row.lifelines !== undefined && row.lifelines !== null) {
+        var lives = document.createElement('span');
+        lives.className = 'lives';
+        lives.textContent = row.lifelines > 0 ? '\u2726'.repeat(row.lifelines) : '';
+        li.appendChild(lives);
+      }
       li.appendChild(pts);
       target.appendChild(li);
     });
@@ -68,9 +81,57 @@
     el('worth-label').textContent = state.points + (state.points === 1 ? ' point' : ' points');
     el('worth-label').classList.remove('hidden');
 
-    el('now-label').textContent = state.judged ? 'Just spelled' : 'Now spelling';
+    var choosing = state.stage === 'choose';
+    el('now-label').textContent = choosing ? 'Choosing a word'
+      : state.stage === 'second' ? 'Second chance'
+      : state.stage === 'judged' ? 'Just spelled' : 'Now spelling';
     el('now-name').textContent = state.current || '';
     el('on-deck').innerHTML = state.next ? 'Up next &mdash; <b>' + escapeHtml(state.next) + '</b>' : 'Last word of the game';
+
+    // Badges: what they chose, what help they spent, and the letter if given.
+    var badges = el('badge-row');
+    badges.innerHTML = '';
+    if (state.choiceMade) {
+      badges.appendChild(badge(state.choiceMade.name + ' \u00B7 ' + state.choiceMade.points + ' pts', state.choiceMade.key));
+    }
+    if (state.firstLetter) badges.appendChild(badge('Starts with ' + state.firstLetter, 'letter'));
+    (state.lifelinesUsed || []).forEach(function (name) { badges.appendChild(badge(name)); });
+    if (!choosing && state.showLifelines && state.lifelinesLeft !== null) {
+      badges.appendChild(badge(state.lifelinesLeft + ' left', ''));
+    }
+
+    // The difficulty menu, so the table sees the stakes before the call.
+    var deck = el('on-deck');
+    if (choosing && state.choices) {
+      var grid = document.createElement('div');
+      grid.className = 'choosing';
+      state.choices.forEach(function (c) {
+        var box = document.createElement('div');
+        box.className = 'opt ' + c.key;
+        box.innerHTML = '<div class="nm">' + escapeHtml(c.name) + '</div>' +
+          '<div class="pt">' + c.points + '</div>' +
+          '<div class="sb">' + escapeHtml(c.sub) + '</div>';
+        grid.appendChild(box);
+      });
+      deck.innerHTML = '';
+      deck.appendChild(grid);
+    }
+
+    // Second chance: these have to be legible from the speller's sofa.
+    var picks = el('pick-list');
+    if (state.secondOptions) {
+      el('pick-head').textContent = 'Which spelling is right?';
+      var list = el('pick-options');
+      list.innerHTML = '';
+      state.secondOptions.forEach(function (option, i) {
+        var li = document.createElement('li');
+        li.innerHTML = '<span class="tag">' + 'ABC'[i] + '</span><span>' + escapeHtml(option) + '</span>';
+        list.appendChild(li);
+      });
+      picks.classList.remove('hidden');
+    } else {
+      picks.classList.add('hidden');
+    }
 
     var reveal = el('reveal');
     if (state.reveal) {

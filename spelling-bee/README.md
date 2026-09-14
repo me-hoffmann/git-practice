@@ -26,6 +26,45 @@ To put it online instead, serve the `app/` folder from anywhere static
 - Up to 10 players. Speller order is randomized fresh each round.
 - No late joiners once a game has started.
 
+## Levelling a mixed table
+
+A group where half the room spells confidently and half does not has a problem
+the final score does not describe: for the nervous half, every turn is a public
+failure with no upside, and the escalating points make it worse by paying most
+for the rounds they cannot win. Three options address the turn rather than the
+scoreboard. All are on by default and each can be switched off.
+
+**The speller picks the difficulty.** Before each word they choose a safer one
+for a point less, the round's own word, or a harder one for two more. This is
+the important one: it turns handicapping from something done *to* a player into
+something they choose, so nobody is handed the easy words, and a nervous speller
+can play safe all night without anyone remarking on it. It also gives the game
+real strategy - someone four points down in round 8 can gamble.
+
+| Round | Safe | Standard | Risky |
+| --- | --- | --- | --- |
+| 6 (3 points) | a round 4 word, 2 points | a round 6 word, 3 points | a round 8 word, 5 points |
+
+Round 1 offers no safer word and round 8 no harder one, so those choices are
+hidden rather than shown as dead options.
+
+**Lifelines.** Three per player by default, spent on a first letter, a shout
+from the table, or a pass to a different word at the same difficulty. Each kind
+can be used once per word. Setting different allowances per player - four for
+the least confident, two for the sharks - is a far softer handicap than
+changing anyone's words, because it adjusts the support rather than the
+challenge.
+
+**Second chance.** A missed word becomes three spellings on the scoreboard, one
+of them right, worth half the points rounded up. Almost nobody leaves a round
+with nothing. The decoys are generated from the trap the word is built around,
+so *separate* offers **seperate**, *occurrence* offers **occurrance**, and
+*grammar* offers **gramar**.
+
+Two further ideas need no code at all: play in **pairs**, entering the team as
+one name, which removes the solo spotlight and halves the runtime; and hand out
+**more than one award** at the end - biggest upset, best miss, most improved.
+
 ## Decisions locked in
 
 | Question | Answer |
@@ -37,6 +76,7 @@ To put it online instead, serve the `app/` folder from anywhere static
 | Pronunciation style | Plain-English respelling (`kuh-TAS-truh-fee`), not IPA |
 | Difficulty anchors | Round 1 = *rhythm*, Round 8 = *eudaemonic* |
 | Player stats over time | Deferred, but the data model is designed for it now |
+| Mixed-ability play | Speller-chosen difficulty, lifelines and a second chance, all optional |
 | Variant spellings | American only. British forms are rejected by the validator |
 | Round 1 floor | Confirmed at *rhythm* level - round 1 is not a freebie |
 
@@ -51,11 +91,31 @@ the stats UI ships later.
 
 The word bank is the real work here, so it gets built and reviewed before the app.
 
-A 10-player game consumes **10 words per tier, 80 words per game**. Twenty
-repeat-free games therefore needs **200 words per tier, 1,600 total**. The bank
-now holds exactly that: 200 words in each of the eight rounds.
+A 10-player game consumes 80 words. In a classic game those come 10 from each
+round's own tier, so twenty repeat-free games needs 200 per tier. Letting
+spellers choose their difficulty keeps the total the same but moves the demand
+around: a cautious table drains the easy rounds, a bold one drains the hard
+ones. Two things absorb that.
 
-Run `node tools/validate.mjs` at any time to see coverage against this target.
+- **Rounds cover for each other.** When a round's words run out the app draws
+  from one or two rounds either side before it repeats anything. A slightly
+  easier word is a far better substitute than a word somebody has already seen.
+- **The low rounds are deepened.** Rounds 1 and 2 hold 260 and 240 words, since
+  round 1 has nothing below it to borrow from and a nervous table leans on it
+  hardest.
+
+Measured over full simulated seasons at ten players:
+
+| How the table plays | First repeated word |
+| --- | --- |
+| classic, no difficulty choice | none in 20 games |
+| mixed - five cautious, five bold | game 18 |
+| evenly split across all three | game 15 |
+| everybody always plays safe | game 10 |
+| everybody always gambles | game 8 |
+
+The setup screen names the thinnest round and warns before it runs dry. Run
+`node tools/validate.mjs` to see raw coverage per round.
 
 ```
 data/words/tier-1.json  ...  tier-8.json     one file per round
@@ -127,13 +187,17 @@ band before the speller starts.
 Judge with **Correct** or **Missed it**, then **Next speller**. Two steps, not
 one, so a misclick is caught before it counts.
 
+A turn runs in up to three steps - choose a difficulty, spell, and if it is
+missed, pick from three spellings. The keyboard follows whichever step is open:
+
 | Key | Does |
 | --- | --- |
-| <kbd>C</kbd> | correct |
-| <kbd>X</kbd> | missed |
+| <kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd> | choosing: pick the difficulty &nbsp;/&nbsp; second chance: the answer they called |
+| <kbd>C</kbd> / <kbd>X</kbd> | correct / missed |
+| <kbd>L</kbd> <kbd>T</kbd> <kbd>P</kbd> | spend a lifeline: letter, table, pass |
+| <kbd>0</kbd> | skip the second chance |
 | <kbd>Space</kbd> | next speller |
-| <kbd>U</kbd> | undo the last ruling |
-| <kbd>S</kbd> | swap this word for another at the same difficulty |
+| <kbd>U</kbd> | undo the whole ruling on this word |
 
 **The scoreboard** (`app/scoreboard.html`) opens in a second window from the
 **Open scoreboard** button. Share that one on the call. It shows the round, its
@@ -146,8 +210,8 @@ Built in because a live game needs them:
 
 - **Undo** steps back across the round boundary, so a misclick on the last
   speller of a round is still recoverable.
-- **Swap** pulls a replacement from the same round's unused pool, so difficulty
-  stays honest when a word turns out to be unpronounceable or already known.
+- **Pass** pulls a replacement from the same difficulty, so a word that turns
+  out to be unpronounceable or already known costs a lifeline rather than a turn.
 - **A refresh does not lose the game.** State is saved after every action; the
   setup screen offers to resume.
 - **The correct spelling is revealed on a miss**, on the shared scoreboard.
