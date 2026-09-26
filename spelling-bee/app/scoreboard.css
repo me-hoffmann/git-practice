@@ -132,3 +132,19 @@ body {
 .pick-list .tag { color: var(--gold); font-size: .48em; font-weight: 400; letter-spacing: .12em; flex: none; }
 
 .scores .lives { color: var(--muted); font-size: .6em; flex: none; letter-spacing: .1em; }
+
+/* ---------- the wagered final round ---------- */
+.wager-panel { margin-top: 2.5vh; }
+.wager-panel ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 1vh; }
+.wager-panel li {
+  display: flex; align-items: baseline; gap: 1.2vw;
+  border: 2px solid var(--line); border-radius: 12px; padding: 1.1vh 1.4vw;
+  font-size: clamp(18px, 2.1vw, 30px);
+}
+.wager-panel li.placed { border-color: #57493f; }
+.wager-panel li.revealed { border-color: var(--gold); }
+.wager-panel .who { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.wager-panel .banked { color: var(--muted); font-size: .72em; font-variant-numeric: tabular-nums; }
+.wager-panel .stake { font-weight: 700; color: var(--gold); font-variant-numeric: tabular-nums; }
+.wager-panel .waiting { color: var(--muted); font-size: .72em; letter-spacing: .1em; }
+.badge.stake { border-color: var(--gold); color: var(--gold); font-weight: 700; }

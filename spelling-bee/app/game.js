@@ -9,7 +9,11 @@
   var CHOICE_TIER_STEP = 2;
   var LIFELINE_KINDS = ['letter', 'table', 'pass'];
 
-  var DEFAULT_SETTINGS = { chooseDifficulty: true, lifelines: 3, secondChance: true };
+  var DEFAULT_SETTINGS = {
+    chooseDifficulty: true, lifelines: 3, secondChance: true,
+    finalWager: true, wagerCap: 'own'
+  };
+  var WAGER_CAPS = ['own', 'catchup'];
 
   // Rounds 1-2 are worth 1 point, 3-4 are worth 2, and so on up to 4.
   function pointsForRound(round) {
@@ -43,13 +47,17 @@
 
   /* The most points reachable in a whole game, used to frame a final score.
      With gambling switched on that is more than the classic 20. */
+  function bestPointsIn(round, settings) {
+    var risky = choiceFor(round, 'risky');
+    return (settings && settings.chooseDifficulty && risky.available) ? risky.points : pointsForRound(round);
+  }
+
   function maxPossible(settings) {
-    var total = 0;
-    for (var r = 1; r <= ROUNDS; r++) {
-      var risky = choiceFor(r, 'risky');
-      total += (settings && settings.chooseDifficulty && risky.available) ? risky.points : pointsForRound(r);
-    }
-    return total;
+    var beforeFinal = 0;
+    for (var r = 1; r < ROUNDS; r++) beforeFinal += bestPointsIn(r, settings);
+    // A wager can at most double whatever was banked in the first seven rounds.
+    if (settings && settings.finalWager) return beforeFinal * 2;
+    return beforeFinal + bestPointsIn(ROUNDS, settings);
   }
 
   function shuffle(list) {
@@ -105,6 +113,8 @@
     var opts = {
       chooseDifficulty: settings ? !!settings.chooseDifficulty : DEFAULT_SETTINGS.chooseDifficulty,
       secondChance: settings ? !!settings.secondChance : DEFAULT_SETTINGS.secondChance,
+      finalWager: settings ? !!settings.finalWager : DEFAULT_SETTINGS.finalWager,
+      wagerCap: settings && WAGER_CAPS.indexOf(settings.wagerCap) !== -1 ? settings.wagerCap : DEFAULT_SETTINGS.wagerCap,
       lifelines: settings && settings.lifelines !== undefined ? Math.max(0, settings.lifelines | 0) : DEFAULT_SETTINGS.lifelines
     };
 
@@ -155,13 +165,15 @@
     return {
       ok: true,
       game: {
-        version: 2,
+        version: 3,
         gameNumber: gameNumber,
         startedAt: new Date().toISOString(),
         settings: opts,
         players: players,
         rounds: rounds,
         pool: pool,
+        wagers: {},
+        wagersLocked: false,
         cursor: { round: 0, index: 0 },
         phase: 'playing'
       }
@@ -201,13 +213,124 @@
     return game.rounds[round].entries[index] || null;
   }
 
+  /* ---------------- the wagered final round ----------------
+     Before round 8 every player stakes some of what they have banked. Land
+     the word and the stake is added, miss it and the stake comes off. A
+     player can never stake more than they hold, so nobody finishes below
+     zero - and the difficulty choice steps aside, because the wager is the
+     only decision that should matter at the climax. */
+
+  function finalWagerRound(game) {
+    return !!game.settings.finalWager && game.cursor.round === ROUNDS - 1;
+  }
+
+  function scoreBeforeFinal(game, playerId) {
+    var total = 0;
+    for (var r = 0; r < ROUNDS - 1; r++) {
+      var round = game.rounds[r];
+      for (var i = 0; i < round.entries.length; i++) {
+        var entry = round.entries[i];
+        if (entry.playerId === playerId && entryResolved(entry)) total += entryPoints(game, round, entry);
+      }
+    }
+    return total;
+  }
+
+  function leaderBeforeFinal(game) {
+    var best = 0;
+    game.players.forEach(function (p) {
+      best = Math.max(best, scoreBeforeFinal(game, p.id));
+    });
+    return best;
+  }
+
+  /* Two limits. Under 'own' nobody stakes more than they hold, which is the
+     classic rule - but it also means a player at less than half the leader's
+     score has no arithmetic path to winning. Under 'catchup' everyone may
+     stake enough to draw level, so the whole table is still alive; a loss
+     never takes more than the player actually has. */
+  function maxWager(game, playerId) {
+    var own = Math.max(0, scoreBeforeFinal(game, playerId));
+    if (game.settings.wagerCap !== 'catchup') return own;
+    return Math.max(own, leaderBeforeFinal(game) - own);
+  }
+
+  function wagerFor(game, playerId) {
+    var amount = game.wagers ? game.wagers[playerId] : undefined;
+    return amount === undefined || amount === null ? 0 : amount;
+  }
+
+  function setWager(game, playerId, amount) {
+    var capped = Math.max(0, Math.min(maxWager(game, playerId), Math.floor(Number(amount) || 0)));
+    game.wagers[playerId] = capped;
+    return capped;
+  }
+
+  function clearWager(game, playerId) {
+    if (game.wagers) delete game.wagers[playerId];
+  }
+
+  function wagerSet(game, playerId) {
+    return !!game.wagers && game.wagers[playerId] !== undefined && game.wagers[playerId] !== null;
+  }
+
+  /* Undoing back into round 7 can change a score after wagers were locked,
+     which would leave somebody staking more than they now hold. */
+  function wagersOutOfDate(game) {
+    for (var i = 0; i < game.players.length; i++) {
+      var p = game.players[i];
+      if (wagerFor(game, p.id) > maxWager(game, p.id)) return true;
+    }
+    return false;
+  }
+
+  function wagerStageOpen(game) {
+    return finalWagerRound(game) && (!game.wagersLocked || wagersOutOfDate(game));
+  }
+
+  function lockWagers(game) {
+    if (!finalWagerRound(game) || wagersOutOfDate(game)) return false;
+    game.players.forEach(function (p) {
+      if (!wagerSet(game, p.id)) game.wagers[p.id] = 0;
+    });
+    game.wagersLocked = true;
+    return true;
+  }
+
+  /* Reopening is allowed only while the final round is still untouched. */
+  function canReopenWagers(game) {
+    if (!finalWagerRound(game) || !game.wagersLocked) return false;
+    return game.rounds[ROUNDS - 1].entries.every(function (e) { return !e.result; });
+  }
+
+  function reopenWagers(game) {
+    if (!canReopenWagers(game)) return false;
+    game.wagersLocked = false;
+    return true;
+  }
+
+  /* Leader first, which is the order the table wants to hear them in. */
+  function wagerBoard(game) {
+    var rows = game.players.map(function (p) {
+      return {
+        id: p.id, name: p.name,
+        banked: maxWager(game, p.id),
+        wager: wagerFor(game, p.id),
+        placed: wagerSet(game, p.id)
+      };
+    });
+    rows.sort(function (a, b) { return b.banked - a.banked || a.name.localeCompare(b.name); });
+    return rows;
+  }
+
   /* The whole turn is derived from the entry, so undo only has to clear
      fields and every screen stays consistent with the saved state. */
   function turnStage(game) {
     if (game.phase !== 'playing') return 'over';
     var entry = currentEntry(game);
     if (!entry) return 'over';
-    if (game.settings.chooseDifficulty && !entry.choice) return 'choose';
+    if (wagerStageOpen(game)) return 'wager';
+    if (game.settings.chooseDifficulty && !finalWagerRound(game) && !entry.choice) return 'choose';
     if (!entry.result) return 'spell';
     if (entry.secondOptions && !entry.second) return 'second';
     return 'judged';
@@ -293,7 +416,8 @@
     if (stage !== 'spell') return false;
     var entry = currentEntry(game);
     entry.result = correct ? 'correct' : 'miss';
-    if (!correct && game.settings.secondChance && typeof buildChoices === 'function') {
+    // No second chance on the wagered word - the stake is the whole risk.
+    if (!correct && game.settings.secondChance && !finalWagerRound(game) && typeof buildChoices === 'function') {
       entry.secondOptions = buildChoices(entry.word.word);
     }
     return true;
@@ -368,6 +492,14 @@
   /* A word landed outright pays its choice in full; one recovered on the
      second chance pays half, rounded up, so it always beats nothing. */
   function entryPoints(game, round, entry) {
+    if (game.settings.finalWager && round.round === ROUNDS) {
+      if (!game.wagersLocked) return 0;
+      var stake = wagerFor(game, entry.playerId);
+      if (entry.result === 'correct') return stake;
+      // A loss never costs more than the player actually holds.
+      if (entry.result === 'miss') return -Math.min(stake, Math.max(0, scoreBeforeFinal(game, entry.playerId)));
+      return 0;
+    }
     var base = choiceFor(round.round, activeChoice(game, entry)).points;
     if (entry.result === 'correct') return base;
     if (entry.second && entry.second.correct) return Math.ceil(base / 2);
@@ -385,7 +517,8 @@
     game.players.forEach(function (p) {
       byId[p.id] = {
         id: p.id, name: p.name, score: 0, correct: 0, attempted: 0,
-        recovered: 0, gambles: 0, lifelines: p.lifelines
+        recovered: 0, gambles: 0, lifelines: p.lifelines,
+        wager: game.settings.finalWager && game.wagersLocked ? wagerFor(game, p.id) : null
       };
     });
     game.rounds.forEach(function (round) {
@@ -439,7 +572,7 @@
     NO_REPEAT_GAMES: NO_REPEAT_GAMES,
     LIFELINE_KINDS: LIFELINE_KINDS,
     DEFAULT_SETTINGS: DEFAULT_SETTINGS,
-    VERSION: 2,
+    VERSION: 3,
     pointsForRound: pointsForRound,
     choiceFor: choiceFor,
     choicesForRound: choicesForRound,
@@ -456,6 +589,20 @@
     lifelinesLeft: lifelinesLeft,
     canUseLifeline: canUseLifeline,
     useLifeline: useLifeline,
+    WAGER_CAPS: WAGER_CAPS,
+    finalWagerRound: finalWagerRound,
+    wagerStageOpen: wagerStageOpen,
+    leaderBeforeFinal: leaderBeforeFinal,
+    scoreBeforeFinal: scoreBeforeFinal,
+    maxWager: maxWager,
+    wagerFor: wagerFor,
+    setWager: setWager,
+    clearWager: clearWager,
+    wagerSet: wagerSet,
+    lockWagers: lockWagers,
+    canReopenWagers: canReopenWagers,
+    reopenWagers: reopenWagers,
+    wagerBoard: wagerBoard,
     judge: judge,
     answerSecondChance: answerSecondChance,
     skipSecondChance: skipSecondChance,

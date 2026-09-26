@@ -58,6 +58,18 @@
           <span>Miss a word and choose between three spellings for half the points.</span>
         </li>
         <li>
+          <label><input type="checkbox" id="opt-wager" checked>
+            <b>Wagered final round</b></label>
+          <span>Before round 8 everyone stakes points on the last word. Land it and the stake is
+            added, miss it and it comes off. No second chances on that one.</span>
+          <label for="opt-wagercap" style="margin-top:8px"><b>Wager limit</b>
+            <select id="opt-wagercap">
+              <option value="own">what the player has</option>
+              <option value="catchup">enough to catch the leader</option>
+            </select></label>
+          <span>The second keeps everybody mathematically alive going into the last word.</span>
+        </li>
+        <li>
           <label for="opt-lifelines"><b>Lifelines each</b>
             <input type="number" id="opt-lifelines" min="0" max="9" value="3"></label>
           <span>First letter, ask the table, or pass. Set a player's own number beside their name.</span>
@@ -75,7 +87,7 @@
         <li><b>Safe word</b><span>two rounds easier, one point less</span></li>
         <li><b>Risky word</b><span>two rounds harder, two points more</span></li>
         <li><b>Second chance</b><span>half the points, rounded up</span></li>
-        <li><b>Perfect game</b><span id="perfect-note">20 points, or 34 if you gamble on every word. Ties stand</span></li>
+        <li><b>Perfect game</b><span id="perfect-note">20 classic, 34 gambling every word, 60 also staking it all. Ties stand</span></li>
       </ul>
       <p class="bank-note" id="bank-note"></p>
     </div>
@@ -96,6 +108,15 @@
 
         <div class="word-card">
           <div class="speller"><span id="speller-label">Now spelling</span> &mdash; <b id="speller-name"></b></div>
+
+          <div id="stage-wager" class="hidden">
+            <p class="choose-prompt" id="wager-prompt"></p>
+            <div id="wager-rows"></div>
+            <div class="actions">
+              <button class="btn-primary" id="btn-lock-wagers" type="button">Lock in the wagers</button>
+              <button class="btn-sm" id="btn-zero-wagers" type="button">Set all to zero</button>
+            </div>
+          </div>
 
           <div id="stage-choose" class="hidden">
             <p class="choose-prompt">Ask them how hard they want it.</p>
@@ -143,6 +164,7 @@
 
           <div class="tool-row">
             <button class="btn-sm" id="btn-undo" type="button">Undo last ruling</button>
+            <button class="btn-sm hidden" id="btn-reopen-wagers" type="button">Reopen the wagers</button>
           </div>
         </div>
       </div>

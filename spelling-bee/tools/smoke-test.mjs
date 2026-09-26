@@ -23,7 +23,8 @@ page.on('response', r => { if (r.status() === 404) errors.push('404: ' + r.url()
 
 const stage = () => page.evaluate(() => {
   const vis = id => !document.getElementById(id).classList.contains('hidden');
-  return vis('stage-choose') ? 'choose' : vis('stage-second') ? 'second'
+  return vis('stage-wager') ? 'wager' : vis('stage-choose') ? 'choose'
+    : vis('stage-second') ? 'second'
     : vis('judge-row') ? 'spell' : vis('verdict') ? 'judged' : 'other';
 });
 
@@ -86,6 +87,10 @@ console.log('picking correctly gives:', (await page.textContent('#verdict-mark')
   '|', (await page.textContent('#verdict-note')).trim());
 const score = await page.$eval('#score-list li.up .sc', e => e.textContent);
 console.log('half of a 3-point gamble scored:', score);
+console.log('scoreboard verdict for a recovered word:', (await board.textContent('#reveal-verdict')).trim());
+console.log('  it is not shown as a miss:', (await board.textContent('#reveal-verdict')).trim() === 'SAVED IT');
+console.log('  and it reads as a win, not a loss:',
+  await board.$eval('#reveal', e => e.className.includes('correct')));
 await board.screenshot({ path: '/tmp/shots/7-board-saved.png' });
 
 console.log('\n--- undo ---');
@@ -93,14 +98,66 @@ await page.keyboard.press('u');
 await page.waitForTimeout(200);
 console.log('undo returns to:', await stage(), '| word kept:', (await page.textContent('#the-word')).trim() === word);
 
-console.log('\n--- play it out ---');
+console.log('\n--- play through to the final round ---');
 let guard = 0;
-while (await page.isHidden('#view-done') && guard++ < 900) {
+while (await stage() !== 'wager' && await page.isHidden('#view-done') && guard++ < 900) {
   const s = await stage();
   if (s === 'choose') await page.keyboard.press(['1','2','3'][Math.floor(Math.random()*3)]);
-  else if (s === 'spell') await page.keyboard.press(Math.random() < 0.55 ? 'c' : 'x');
+  else if (s === 'spell') await page.keyboard.press(Math.random() < 0.7 ? 'c' : 'x');
   else if (s === 'second') await page.keyboard.press(String(1 + Math.floor(Math.random()*3)));
   else if (s === 'judged') await page.keyboard.press(' ');
+  else break;
+}
+await page.waitForTimeout(300);
+console.log('the wager step appears:', await stage() === 'wager');
+console.log('round shown:', await page.textContent('#round-no'));
+const caps = await page.$$eval('#wager-rows .wager-row', rows => rows.map(r => ({
+  who: r.querySelector('.who').textContent,
+  banked: r.querySelector('.banked').textContent,
+  cap: r.querySelector('.cap').textContent
+})));
+console.log('wager limits offered:', caps.map(c => `${c.who} ${c.banked} (${c.cap})`).join(', '));
+console.log('scoreboard is taking wagers:', (await board.textContent('#now-label')).trim());
+console.log('SECURITY - no amounts on the scoreboard yet:',
+  !(await board.textContent('#wager-rows')).match(/locked in/));
+await page.screenshot({ path: '/tmp/shots/10-wager.png', fullPage: true });
+
+// Stake everything for the leader, nothing for the last-placed player.
+const inputs = await page.$$('#wager-rows input:not([disabled])');
+if (inputs.length) { await inputs[0].fill(''); await page.click('#wager-rows .wager-row .btn-max'); }
+await page.waitForTimeout(200);
+console.log('one player locked in, rest waiting:',
+  (await board.textContent('#wager-rows')).includes('locked in'));
+await board.screenshot({ path: '/tmp/shots/11-board-wagering.png' });
+
+const remaining = await page.$$('#wager-rows input:not([disabled])');
+for (let i = 1; i < remaining.length; i++) await remaining[i].fill(String(i));
+await page.click('#btn-lock-wagers');
+await page.waitForTimeout(300);
+console.log('after locking, stage is:', await stage());
+console.log('no difficulty choice on the final word:', await stage() !== 'choose');
+const revealed = await board.$$eval('#wager-rows li', ls => ls.map(l => l.textContent.replace(/\s+/g,' ').trim()));
+console.log('scoreboard now reveals every stake:', revealed.join(' | '));
+console.log('the speller\'s stake is badged:', (await board.textContent('#badge-row')).includes('at stake'));
+await page.screenshot({ path: '/tmp/shots/12-final-word.png', fullPage: true });
+await board.screenshot({ path: '/tmp/shots/13-board-final-word.png' });
+
+const stakeBefore = await page.$eval('#score-list li.up .sc', e => Number(e.textContent));
+const chipText = (await page.textContent('#chip-row')).trim();
+await page.keyboard.press('x');
+await page.waitForTimeout(250);
+console.log('a miss on the wagered word goes straight to:', await stage(), '(no second chance)');
+console.log('verdict:', (await page.textContent('#verdict-note')).trim());
+const stakeAfter = await page.$eval('#score-list li.up .sc', e => Number(e.textContent));
+console.log(`score moved ${stakeBefore} -> ${stakeAfter} with ${chipText}`);
+console.log('score never went below zero:', stakeAfter >= 0);
+
+while (await page.isHidden('#view-done') && guard++ < 900) {
+  const s = await stage();
+  if (s === 'spell') await page.keyboard.press(Math.random() < 0.6 ? 'c' : 'x');
+  else if (s === 'judged') await page.keyboard.press(' ');
+  else if (s === 'choose') await page.keyboard.press('1');
+  else if (s === 'second') await page.keyboard.press('1');
   else break;
 }
 await page.waitForTimeout(300);
