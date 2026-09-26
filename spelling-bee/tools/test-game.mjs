@@ -343,6 +343,13 @@ check('the rounds run 1 to 8 in order',
   recap.every(r => r.words.every((w, i) => w.round === i + 1)));
 check('per-word points add up to the score',
   recap.every(r => r.words.reduce((s, w) => s + w.points, 0) === r.score));
+check('every word carries its definition and origin for the practice sheet',
+  recap.every(r => r.words.every(w => w.definition && w.definition.length > 5 && w.origin)));
+check('the definition matches the word bank',
+  recap.every(r => r.words.every(w => {
+    const found = Object.values(bank).flat().find(e => e.word === w.word);
+    return found && found.definition === w.definition && found.origin === w.origin;
+  })));
 check('the final word is flagged as wagered',
   recap.every(r => r.words[Game.ROUNDS - 1].wagered === true));
 const savedSomewhere = recap.some(r => r.words.some(w => w.result === 'saved'));

@@ -275,9 +275,17 @@ back how it went. Press the button again to return to the standings.
 **Print / Save as PDF.** This opens the browser's own print dialog, where
 "Save as PDF" is the destination. The printed sheet is a light, ink-friendly
 document rather than the evening theme: date and player count, the winner, the
-full standings table, then a block per player with their eight words in two
-columns, and a footer recording which options the game was played with. Player
-blocks never split across a page break. Ten players comes out at three pages.
+full standings table, then a block per player with every word they were given,
+and a footer recording which options the game was played with.
+
+Each word carries its language of origin and definition, which makes the sheet
+worth keeping rather than just reading once - a missed word stays fully legible
+in black with only a red cross in the margin, because those are the ones
+somebody might actually want to study. Player blocks never split across a page
+break. Ten players comes out at six pages.
+
+The on-screen recap deliberately stays a glance view with no definitions;
+eighty of them on a shared screen would be unreadable.
 
 It is print-to-PDF rather than a one-click download on purpose. A real `.pdf`
 button needs a PDF library pulled from a CDN - about 300KB that has to be
