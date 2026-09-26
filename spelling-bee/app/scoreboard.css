@@ -148,3 +148,47 @@ body {
 .wager-panel .stake { font-weight: 700; color: var(--gold); font-variant-numeric: tabular-nums; }
 .wager-panel .waiting { color: var(--muted); font-size: .72em; letter-spacing: .1em; }
 .badge.stake { border-color: var(--gold); color: var(--gold); font-weight: 700; }
+
+/* ---------- every word, player by player ---------- */
+.recap-board { flex: 1; display: flex; flex-direction: column; gap: 1.6vh; min-height: 0; }
+.recap-legend {
+  display: flex; gap: 2vw; flex-wrap: wrap;
+  font-size: clamp(12px, 1.2vw, 17px); color: var(--muted);
+}
+.recap-legend b { font-size: 1.15em; }
+.recap-legend .ok { color: var(--green); }
+.recap-legend .saved { color: var(--gold); }
+.recap-legend .no { color: var(--red); }
+
+.recap-grid {
+  flex: 1; display: grid; gap: 1.1vw; min-height: 0;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  align-content: start;
+}
+.pcard {
+  border: 2px solid var(--line); border-radius: 12px; padding: 1.1vh .9vw;
+  background: var(--panel); min-width: 0;
+}
+.pc-head {
+  display: flex; align-items: baseline; gap: .5vw;
+  border-bottom: 1px solid var(--line); padding-bottom: .7vh; margin-bottom: .6vh;
+}
+.pc-head .rk { color: var(--muted); font-size: clamp(11px, 1vw, 15px); font-variant-numeric: tabular-nums; }
+.pc-head .nm {
+  flex: 1; font-weight: 700; font-size: clamp(15px, 1.5vw, 22px);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.pc-head .sc { font-weight: 700; color: var(--gold); font-size: clamp(15px, 1.5vw, 22px); font-variant-numeric: tabular-nums; }
+
+.pcard ul { list-style: none; margin: 0; padding: 0; }
+.pcard li {
+  display: flex; align-items: baseline; gap: .45vw;
+  font-size: clamp(11.5px, 1.12vw, 16px); padding: .28vh 0; min-width: 0;
+}
+.pcard .mk { flex: none; width: 1.1em; text-align: center; font-weight: 700; }
+.pcard li.correct .mk { color: var(--green); }
+.pcard li.saved .mk { color: var(--gold); }
+.pcard li.miss .mk { color: var(--red); }
+.pcard .wd { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pcard li.miss .wd { color: var(--muted); }
+.pcard .pts { flex: none; color: var(--gold); font-weight: 700; font-variant-numeric: tabular-nums; }

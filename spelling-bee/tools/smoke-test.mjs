@@ -165,6 +165,54 @@ console.log('finished:', (await page.textContent('#winner-line')).trim(), '|', (
 await page.screenshot({ path: '/tmp/shots/8-results.png', fullPage: true });
 await board.screenshot({ path: '/tmp/shots/9-board-final.png' });
 
+console.log('\n--- every word, on the scoreboard ---');
+await page.click('#btn-board-recap');
+await page.waitForTimeout(300);
+const cards = await board.$$eval('#recap-grid .pcard', cs => cs.map(c => ({
+  name: c.querySelector('.nm').textContent,
+  score: c.querySelector('.sc').textContent,
+  words: [...c.querySelectorAll('li')].map(li => li.className + ':' + li.querySelector('.wd').textContent)
+})));
+console.log('cards shown:', cards.length, '| words on each:', [...new Set(cards.map(c => c.words.length))]);
+console.log('leader card first:', cards[0].name, cards[0].score);
+console.log('sample:', cards[0].words.slice(0, 4).join('  '));
+console.log('every result is settled:',
+  cards.every(c => c.words.every(w => /^(correct|saved|miss):/.test(w))));
+console.log('the wagered word carries its swing:',
+  await board.$$eval('#recap-grid .pcard li .pts', n => n.length) > 0);
+await board.screenshot({ path: '/tmp/shots/14-board-recap.png' });
+console.log('toggles back:', (await page.textContent('#btn-board-recap')).includes('Back'));
+await page.click('#btn-board-recap');
+await page.waitForTimeout(200);
+console.log('and returns to the standings:', !(await board.isHidden('#view-final')));
+
+console.log('\n--- printable results ---');
+const sheet = await page.evaluate(() => ({
+  meta: document.getElementById('print-meta').textContent,
+  champ: document.getElementById('print-champ').textContent,
+  rows: document.querySelectorAll('#print-standings tr').length,
+  players: document.querySelectorAll('#print-players .p-player').length,
+  words: document.querySelectorAll('#print-players .p-words li').length,
+  foot: document.getElementById('print-foot').textContent,
+  hiddenOnScreen: getComputedStyle(document.getElementById('print-sheet')).display
+}));
+console.log('sheet:', sheet.meta, '|', sheet.champ);
+console.log('standings rows:', sheet.rows, '| player blocks:', sheet.players, '| words listed:', sheet.words);
+console.log('footer:', sheet.foot);
+console.log('hidden on screen:', sheet.hiddenOnScreen === 'none');
+
+await page.emulateMedia({ media: 'print' });
+console.log('in print media only the sheet shows:', await page.evaluate(() => {
+  const vis = el => getComputedStyle(el).display !== 'none';
+  return vis(document.getElementById('print-sheet')) && !vis(document.getElementById('view-done'));
+}));
+await page.screenshot({ path: '/tmp/shots/15-print-preview.png', fullPage: true });
+await page.pdf({ path: '/tmp/shots/spelling-bee-results.pdf', format: 'Letter', printBackground: false });
+await page.emulateMedia({ media: 'screen' });
+const pdfBytes = fs.statSync('/tmp/shots/spelling-bee-results.pdf').size;
+console.log('PDF written:', pdfBytes, 'bytes | starts with %PDF:',
+  fs.readFileSync('/tmp/shots/spelling-bee-results.pdf').subarray(0, 4).toString() === '%PDF');
+
 const stored = await page.evaluate(() => JSON.parse(localStorage.getItem('spellingbee.history')));
 console.log('history: games', stored.games.length, '| words burned', Object.keys(stored.usedWords).length);
 

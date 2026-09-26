@@ -330,6 +330,28 @@ const NW = playOut(newGame(NAMES, NOWAGER), () => 'standard', 0.7);
 check('with wagering off round 8 scores normally', NW.phase === 'done');
 check('and nobody can exceed 34', Game.standings(NW).every(r => r.score <= 34));
 
+console.log('\nthe end-of-game recap');
+const REC = playOut(newGame(NAMES, FULL), () => ['safe','standard','risky'][Math.floor(Math.random()*3)], 0.6);
+const recap = Game.recap(REC);
+check('every player gets a card', recap.length === NAMES.length);
+check('each card lists all eight words', recap.every(r => r.words.length === Game.ROUNDS));
+check('cards are ordered by the final standings',
+  recap.every((r, i) => i === 0 || recap[i - 1].score >= r.score));
+check('each word carries a settled result',
+  recap.every(r => r.words.every(w => ['correct','saved','miss'].indexOf(w.result) !== -1)));
+check('the rounds run 1 to 8 in order',
+  recap.every(r => r.words.every((w, i) => w.round === i + 1)));
+check('per-word points add up to the score',
+  recap.every(r => r.words.reduce((s, w) => s + w.points, 0) === r.score));
+check('the final word is flagged as wagered',
+  recap.every(r => r.words[Game.ROUNDS - 1].wagered === true));
+const savedSomewhere = recap.some(r => r.words.some(w => w.result === 'saved'));
+console.log('  note  a recovered word shows as "saved":', savedSomewhere);
+
+const RECC = playOut(newGame(NAMES, CLASSIC), () => 'standard', 0.6);
+check('with wagering off no word is flagged wagered',
+  Game.recap(RECC).every(r => r.words.every(w => w.wagered === false)));
+
 console.log('\nties');
 const T = playOut(newGame(['A', 'B', 'C'], CLASSIC), () => 'standard', 1);
 check('an all-correct game ties everyone at rank 1', Game.winners(T).length === 3);

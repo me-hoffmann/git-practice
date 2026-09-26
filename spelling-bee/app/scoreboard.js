@@ -9,6 +9,41 @@
     el('view-waiting').classList.toggle('hidden', which !== 'waiting');
     el('view-live').classList.toggle('hidden', which !== 'live');
     el('view-final').classList.toggle('hidden', which !== 'final');
+    el('view-recap').classList.toggle('hidden', which !== 'recap');
+  }
+
+  var MARKS = { correct: '\u2713', saved: '\u00BD', miss: '\u2717', unplayed: '\u2013' };
+
+  /* One card per player, leader first, so everyone can find their own name
+     and read back the eight words they were given. */
+  function paintRecap(recap) {
+    var grid = el('recap-grid');
+    grid.innerHTML = '';
+    recap.forEach(function (player) {
+      var card = document.createElement('div');
+      card.className = 'pcard';
+
+      var head = document.createElement('div');
+      head.className = 'pc-head';
+      head.innerHTML = '<span class="rk">' + player.rank + '</span>' +
+        '<span class="nm">' + escapeHtml(player.name) + '</span>' +
+        '<span class="sc">' + player.score + '</span>';
+      card.appendChild(head);
+
+      var list = document.createElement('ul');
+      player.words.forEach(function (w) {
+        var li = document.createElement('li');
+        li.className = w.result;
+        var tail = w.wagered && w.points !== 0
+          ? '<span class="pts">' + (w.points > 0 ? '+' : '\u2212') + Math.abs(w.points) + '</span>'
+          : '';
+        li.innerHTML = '<span class="mk">' + MARKS[w.result] + '</span>' +
+          '<span class="wd">' + escapeHtml(w.word) + '</span>' + tail;
+        list.appendChild(li);
+      });
+      card.appendChild(list);
+      grid.appendChild(card);
+    });
   }
 
   function badge(text, kind) {
@@ -56,6 +91,14 @@
       el('worth-label').textContent = '';
       el('worth-label').classList.add('hidden');
       show('waiting');
+      return;
+    }
+
+    if (state.phase === 'done' && state.finalView === 'recap' && state.recap) {
+      el('round-label').textContent = 'Every word';
+      el('worth-label').classList.add('hidden');
+      paintRecap(state.recap);
+      show('recap');
       return;
     }
 

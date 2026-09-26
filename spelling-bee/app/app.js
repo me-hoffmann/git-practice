@@ -7,6 +7,8 @@
   var board = null;         // the scoreboard window, when open
   var lastRoster = [];
   var revealedLetters = null;
+  var finalView = 'summary';          // what the shared scoreboard shows once the game is over
+  var MARKS = { correct: '\u2713', saved: '\u00BD', miss: '\u2717', unplayed: '\u2013' };
 
   // Every real spelling, so a decoy is never accidentally correct.
   var REAL_WORDS = new Set();
@@ -157,6 +159,7 @@
     game = built.game;
     lastRoster = game.players.map(function (p) { return { name: p.name, lifelines: p.lifelinesStart }; });
     revealedLetters = null;
+    finalView = 'summary';
     render();
   }
 
@@ -546,9 +549,73 @@
       recap.appendChild(d);
     });
 
+    renderPrintSheet(rows, champs);
+    el('btn-board-recap').textContent = finalView === 'recap'
+      ? 'Back to the final standings' : 'Put every word on the scoreboard';
     Storage.recordGame(game, rows);
     Storage.clearGame();
     renderStandings();
+  }
+
+  /* Builds the sheet the print stylesheet reveals. Same data as the
+     scoreboard recap, laid out for paper. */
+  function renderPrintSheet(rows, champs) {
+    var when = new Date(game.finishedAt || Date.now());
+    var date = when.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
+    el('print-meta').textContent = date + ' \u00B7 ' + game.players.length + ' players \u00B7 ' +
+      Game.ROUNDS + ' rounds';
+    var names = champs.map(function (c) { return c.name; });
+    el('print-champ').textContent = champs.length === 1
+      ? names[0] + ' wins with ' + champs[0].score +
+        (champs[0].score === 1 ? ' point' : ' points') + '.'
+      : 'A tie \u2014 ' + names.join(', ') + ' \u2014 on ' + champs[0].score + ' points each.';
+
+    var body = el('print-standings');
+    body.innerHTML = '';
+    rows.forEach(function (row) {
+      var tr = document.createElement('tr');
+      if (row.rank === 1) tr.className = 'first';
+      tr.innerHTML = '<td>' + row.rank + '</td><td>' + escapeHtml(row.name) + '</td>' +
+        '<td class="n">' + row.correct + ' / ' + row.attempted + '</td>' +
+        '<td class="n">' + (row.recovered || '\u2013') + '</td>' +
+        '<td class="n">' + row.score + '</td>';
+      body.appendChild(tr);
+    });
+
+    var host = el('print-players');
+    host.innerHTML = '';
+    Game.recap(game).forEach(function (player) {
+      var block = document.createElement('div');
+      block.className = 'p-player';
+      var h = document.createElement('h2');
+      h.innerHTML = '<span>' + escapeHtml(player.name) + '</span><span class="tot">' +
+        player.score + '</span>';
+      var ul = document.createElement('ul');
+      ul.className = 'p-words';
+      player.words.forEach(function (w) {
+        var li = document.createElement('li');
+        li.className = w.result;
+        var tail = w.wagered && w.points !== 0
+          ? '<span class="pts">' + (w.points > 0 ? '+' : '\u2212') + Math.abs(w.points) + '</span>'
+          : '';
+        li.innerHTML = '<span class="r">' + w.round + '</span>' +
+          '<span class="mk">' + MARKS[w.result] + '</span>' +
+          '<span class="wd">' + escapeHtml(w.word) + '</span>' + tail;
+        ul.appendChild(li);
+      });
+      block.appendChild(h);
+      block.appendChild(ul);
+      host.appendChild(block);
+    });
+
+    var bits = [];
+    if (game.settings.chooseDifficulty) bits.push('speller-chosen difficulty');
+    if (game.settings.lifelines > 0) bits.push(game.settings.lifelines + ' lifelines each');
+    if (game.settings.secondChance) bits.push('second chances');
+    if (game.settings.finalWager) bits.push('wagered final round');
+    el('print-foot').textContent = bits.length
+      ? 'Played with ' + bits.join(', ') + '.'
+      : 'Played as a straight classic bee.';
   }
 
   function escapeHtml(str) {
@@ -568,7 +635,9 @@
       return {
         type: 'sbee:state', phase: 'done', standings: rows,
         winners: Game.winners(game).map(function (w) { return w.name; }),
-        perfect: Game.maxPossible(game.settings)
+        perfect: Game.maxPossible(game.settings),
+        finalView: finalView,
+        recap: finalView === 'recap' ? Game.recap(game) : null
       };
     }
     var stage = Game.turnStage(game);
@@ -741,15 +810,22 @@
   el('btn-undo').addEventListener('click', doUndo);
   el('btn-quit').addEventListener('click', quitGame);
   el('btn-scoreboard').addEventListener('click', openScoreboard);
+  el('btn-board-recap').addEventListener('click', function () {
+    finalView = finalView === 'recap' ? 'summary' : 'recap';
+    render();
+  });
+  el('btn-print').addEventListener('click', function () { window.print(); });
   el('btn-again').addEventListener('click', function () {
     var built = Game.createGame(lastRoster, window.WORD_BANK, Storage.loadHistory(), game ? game.settings : readSettings());
     if (!built.ok) { window.alert(built.error); return; }
     game = built.game;
     revealedLetters = null;
+    finalView = 'summary';
     render();
   });
   el('btn-newplayers').addEventListener('click', function () {
     game = null;
+    finalView = 'summary';
     fillRoster(lastRoster);
     render();
   });

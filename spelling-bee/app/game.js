@@ -550,6 +550,35 @@
     return rows;
   }
 
+  /* Every word a player faced, in round order, for the end-of-game wrap-up.
+     Ordered by the final standings so the sheet reads leader first. */
+  function recap(game) {
+    return standings(game).map(function (row) {
+      var words = [];
+      game.rounds.forEach(function (round) {
+        round.entries.forEach(function (entry) {
+          if (entry.playerId !== row.id) return;
+          var saved = !!(entry.second && entry.second.correct);
+          words.push({
+            round: round.round,
+            word: entry.word.word,
+            choice: activeChoice(game, entry),
+            wagered: !!(game.settings.finalWager && round.round === ROUNDS),
+            result: !entryResolved(entry) ? 'unplayed'
+              : entry.result === 'correct' ? 'correct'
+              : saved ? 'saved' : 'miss',
+            points: entryResolved(entry) ? entryPoints(game, round, entry) : 0
+          });
+        });
+      });
+      return {
+        id: row.id, name: row.name, score: row.score, rank: row.rank,
+        correct: row.correct, recovered: row.recovered, wager: row.wager,
+        words: words
+      };
+    });
+  }
+
   function winners(game) {
     return standings(game).filter(function (row) { return row.rank === 1; });
   }
@@ -611,6 +640,7 @@
     entryPoints: entryPoints,
     entryResolved: entryResolved,
     standings: standings,
+    recap: recap,
     winners: winners,
     progress: progress
   };

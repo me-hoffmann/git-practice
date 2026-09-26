@@ -281,3 +281,49 @@ input[type="text"]:focus { outline: 2px solid var(--gold); outline-offset: 1px; 
 .wager-row.broke .cap { color: var(--red); }
 
 .stake-chip { border-color: var(--gold) !important; color: var(--gold) !important; font-weight: 700; }
+
+/* ---------- the printable results sheet ---------- */
+#print-sheet { display: none; }
+
+@media print {
+  /* Paper wants ink-light and black on white, not the evening theme. */
+  :root { color-scheme: light; }
+  body { background: #fff; color: #111; font-size: 11pt; }
+  .wrap { max-width: none; padding: 0; }
+  .wrap > *:not(#print-sheet) { display: none !important; }
+  #print-sheet { display: block; }
+  @page { margin: 16mm; }
+
+  #print-sheet h1 { font-size: 20pt; margin: 0 0 2mm; letter-spacing: -.01em; }
+  #print-sheet .p-meta { margin: 0 0 6mm; color: #555; font-size: 10pt; }
+  #print-sheet .p-champ { font-size: 14pt; font-weight: 700; margin: 0 0 4mm; }
+
+  .p-table { width: 100%; border-collapse: collapse; margin-bottom: 8mm; }
+  .p-table th, .p-table td { border-bottom: 1px solid #ccc; padding: 2mm 3mm; text-align: left; }
+  .p-table th { font-size: 8.5pt; text-transform: uppercase; letter-spacing: .08em; color: #555; font-weight: 600; }
+  .p-table .n { text-align: right; }
+  .p-table tr.first td { font-weight: 700; }
+
+  .p-player { break-inside: avoid; page-break-inside: avoid; margin-bottom: 6mm; }
+  .p-player h2 {
+    font-size: 12pt; margin: 0 0 1.5mm; padding-bottom: 1mm;
+    border-bottom: 1.5pt solid #111; display: flex; justify-content: space-between;
+  }
+  .p-player h2 .tot { font-variant-numeric: tabular-nums; }
+  .p-words { list-style: none; margin: 0; padding: 0; columns: 2; column-gap: 10mm; }
+  .p-words li {
+    display: flex; gap: 2.5mm; padding: .9mm 0; font-size: 10pt;
+    break-inside: avoid; page-break-inside: avoid;
+  }
+  .p-words .r { color: #777; width: 7mm; flex: none; font-variant-numeric: tabular-nums; }
+  .p-words .mk { width: 4mm; flex: none; font-weight: 700; }
+  .p-words li.miss .wd { color: #777; text-decoration: line-through; }
+  .p-words .pts { margin-left: auto; font-variant-numeric: tabular-nums; }
+  #print-sheet .p-foot { margin-top: 8mm; color: #666; font-size: 9pt; border-top: 1px solid #ccc; padding-top: 2mm; }
+}
+
+@media print {
+  /* Keep the numeric columns together on the right instead of drifting apart. */
+  .p-table th:first-child, .p-table td:first-child { width: 8mm; }
+  .p-table th.n, .p-table td.n { width: 22mm; }
+}
