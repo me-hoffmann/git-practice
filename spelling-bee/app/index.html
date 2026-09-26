@@ -194,6 +194,8 @@
       <div class="actions">
         <button id="btn-again" class="btn-primary" type="button">New game, same players</button>
         <button id="btn-newplayers" type="button">Change players</button>
+        <button id="btn-board-recap" type="button">Put every word on the scoreboard</button>
+        <button id="btn-print" type="button">Print / Save as PDF</button>
       </div>
     </div>
 
@@ -203,6 +205,18 @@
       <div id="recap"></div>
     </div>
   </section>
+
+  <div id="print-sheet">
+    <h1>Family Spelling Bee</h1>
+    <p class="p-meta" id="print-meta"></p>
+    <p class="p-champ" id="print-champ"></p>
+    <table class="p-table">
+      <thead><tr><th>#</th><th>Player</th><th class="n">Correct</th><th class="n">Saved</th><th class="n">Points</th></tr></thead>
+      <tbody id="print-standings"></tbody>
+    </table>
+    <div id="print-players"></div>
+    <p class="p-foot" id="print-foot"></p>
+  </div>
 
 </div>
 

@@ -117,6 +117,7 @@ one name, which removes the solo spotlight and halves the runtime; and hand out
 | Difficulty anchors | Round 1 = *rhythm*, Round 8 = *eudaemonic* |
 | Player stats over time | Deferred, but the data model is designed for it now |
 | Mixed-ability play | Speller-chosen difficulty, lifelines and a second chance, all optional |
+| Wrap-up | Per-player word recap on the shared screen, and a printable results sheet |
 | Final round | Wagered, Final Jeopardy style, with two limit rules |
 | Variant spellings | American only. British forms are rejected by the validator |
 | Round 1 floor | Confirmed at *rhythm* level - round 1 is not a freebie |
@@ -258,6 +259,30 @@ Built in because a live game needs them:
   setup screen offers to resume.
 - **The correct spelling is revealed on a miss**, on the shared scoreboard.
 - **Ties are shown as ties**, sharing rank 1, with no tiebreaker.
+
+## Wrapping up a game
+
+When the last word is judged, the results screen offers two things beyond the
+standings.
+
+**Put every word on the scoreboard.** The shared screen switches to one card
+per player, leader first, listing all eight words they were given with a green
+check for a word landed, a gold half for one recovered on the second chance,
+and a red cross for a miss. The wagered final word also shows its swing. It is
+the natural way to close the night - everyone finds their own name and reads
+back how it went. Press the button again to return to the standings.
+
+**Print / Save as PDF.** This opens the browser's own print dialog, where
+"Save as PDF" is the destination. The printed sheet is a light, ink-friendly
+document rather than the evening theme: date and player count, the winner, the
+full standings table, then a block per player with their eight words in two
+columns, and a footer recording which options the game was played with. Player
+blocks never split across a page break. Ten players comes out at three pages.
+
+It is print-to-PDF rather than a one-click download on purpose. A real `.pdf`
+button needs a PDF library pulled from a CDN - about 300KB that has to be
+reachable on game night, for worse typography. The browser already does this
+better, offline, in every browser.
 
 ## Tools
 
