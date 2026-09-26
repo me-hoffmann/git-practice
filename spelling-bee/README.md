@@ -80,16 +80,26 @@ Two limits are available at setup.
 
 | Limit | A player may stake | What it does |
 | --- | --- | --- |
-| **what the player has** *(default)* | up to their own banked score | the classic rule. A player below half the leader's score has no arithmetic path to winning |
+| **what the player has** *(default)* | up to their own banked score | the classic rule. Doubling your own score is the ceiling, so a trailing player usually needs the leader to stake something and miss it |
 | **enough to catch the leader** | their own score, or the gap to the leader, whichever is larger | keeps the whole table mathematically alive into the last word |
 
-Over 1,000 simulated games with five strong spellers and five weak ones, the
-wager changes who wins **about one game in five** - and close to every game
-when the leader plays safe and the chasers go all in. What it does *not* do is
-manufacture a win for somebody far behind: a weaker speller still took the
-title in roughly 1 game in 1,000 under either limit, because winning the last
-word still means spelling a round 8 word correctly. The wager makes the finish
-genuinely tense among the contenders; it is not a handicap.
+Overtaking a bigger score is perfectly possible under either limit, because
+the leader can lose points too. Eight points staked in full and landed makes
+sixteen; twenty points with five staked and missed falls to fifteen. There is
+a regression test for exactly that.
+
+What the wager cannot do is guarantee it, because the trailing player has to
+spell a round 8 word correctly *and* needs the leader to stake something and
+miss. Over 1,000 simulated games with five strong spellers and five weak ones,
+the wager changes who wins **about one game in five**, and close to every game
+when the leader plays safe while the chasers go all in - but a weaker speller
+still took the title only about once in 1,000 games under either limit. The
+wager makes the finish genuinely tense; it is not a handicap.
+
+The one case with no path at all is a leader who stakes nothing: they cannot
+be caught by anyone whose doubled score is below their total. Under the
+catch-up limit that is still true, but far fewer players are in that position
+going in.
 
 Two further ideas need no code at all: play in **pairs**, entering the team as
 one name, which removes the solo spotlight and halves the runtime; and hand out

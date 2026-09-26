@@ -253,6 +253,63 @@ while (Game.turnStage(WU) !== 'wager' && WU.phase === 'playing') {
 }
 check('a score change after locking reopens the wagers', Game.turnStage(WU) === 'wager');
 
+/* A trailing player CAN overtake a bigger score under the default limit: the
+   leader only has to stake something and miss it. Worked example - 8 stakes
+   it all and lands it for 16; 20 stakes 5 and misses, falling to 15. */
+function riggedFinal(targets, settings = FULL) {
+  const names = Object.keys(targets);
+  const g = Game.createGame(names, bank, blank(), settings).game;
+  for (const name of names) {
+    const player = g.players.find(p => p.name === name);
+    // Which rounds to win, to bank exactly the target.
+    const options = [];
+    for (let r = 1; r < Game.ROUNDS; r++) {
+      options.push([0].concat(Game.choicesForRound(r).map(c => c.points))
+        .map(pts => ({ pts, key: (Game.choicesForRound(r).find(c => c.points === pts) || {}).key })));
+    }
+    const plan = [];
+    (function search(i, left) {
+      if (i === options.length) return left === 0;
+      for (const opt of options[i]) {
+        if (opt.pts > left) continue;
+        plan[i] = opt;
+        if (search(i + 1, left - opt.pts)) return true;
+      }
+      return false;
+    })(0, targets[name]);
+    plan.forEach((opt, i) => {
+      const entry = g.rounds[i].entries.find(e => e.playerId === player.id);
+      entry.choice = opt.key || 'standard';
+      entry.result = opt.pts > 0 ? 'correct' : 'miss';
+    });
+  }
+  g.cursor = { round: Game.ROUNDS - 1, index: 0 };
+  return g;
+}
+
+const RIG = riggedFinal({ Trailer: 8, Leader: 20 });
+const tId = RIG.players.find(p => p.name === 'Trailer').id;
+const lId = RIG.players.find(p => p.name === 'Leader').id;
+check('the rig banks the intended scores',
+  Game.scoreBeforeFinal(RIG, tId) === 8 && Game.scoreBeforeFinal(RIG, lId) === 20,
+  `${Game.scoreBeforeFinal(RIG, tId)} and ${Game.scoreBeforeFinal(RIG, lId)}`);
+Game.setWager(RIG, tId, 8);
+Game.setWager(RIG, lId, 5);
+Game.lockWagers(RIG);
+while (RIG.phase === 'playing') {
+  const s = Game.turnStage(RIG);
+  if (s === 'spell') Game.judge(RIG, Game.currentEntry(RIG).playerId === tId, choices);
+  else if (s === 'judged') Game.advance(RIG);
+  else break;
+}
+const rig = Game.standings(RIG);
+check('8 staking it all and landing it finishes on 16',
+  rig.find(r => r.id === tId).score === 16, String(rig.find(r => r.id === tId).score));
+check('20 staking 5 and missing falls to 15',
+  rig.find(r => r.id === lId).score === 15, String(rig.find(r => r.id === lId).score));
+check('so the trailing player wins outright',
+  Game.winners(RIG).length === 1 && Game.winners(RIG)[0].id === tId);
+
 const CATCH = toFinal({ ...FULL, wagerCap: 'catchup' });
 const cBoard = Game.wagerBoard(CATCH);
 const cLeader = cBoard[0], cTrailer = cBoard[cBoard.length - 1];
