@@ -600,7 +600,9 @@
           : '';
         li.innerHTML = '<span class="r">' + w.round + '</span>' +
           '<span class="mk">' + MARKS[w.result] + '</span>' +
-          '<span class="wd">' + escapeHtml(w.word) + '</span>' + tail;
+          '<span class="body"><span class="wd">' + escapeHtml(w.word) + '</span>' +
+          '<span class="def"><i>' + escapeHtml(w.origin) + '</i> \u00B7 ' +
+          escapeHtml(w.definition) + '</span></span>' + tail;
         ul.appendChild(li);
       });
       block.appendChild(h);

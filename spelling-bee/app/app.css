@@ -310,14 +310,26 @@ input[type="text"]:focus { outline: 2px solid var(--gold); outline-offset: 1px; 
     border-bottom: 1.5pt solid #111; display: flex; justify-content: space-between;
   }
   .p-player h2 .tot { font-variant-numeric: tabular-nums; }
-  .p-words { list-style: none; margin: 0; padding: 0; columns: 2; column-gap: 10mm; }
+  /* One column now that each word carries a definition - prose needs the
+     full width, and two narrow columns of wrapped text read badly. */
+  .p-words { list-style: none; margin: 0; padding: 0; }
   .p-words li {
-    display: flex; gap: 2.5mm; padding: .9mm 0; font-size: 10pt;
+    display: flex; align-items: baseline; gap: 2.5mm; padding: 1.1mm 0; font-size: 10pt;
+    border-bottom: .25pt solid #eee;
     break-inside: avoid; page-break-inside: avoid;
   }
+  .p-words li:last-child { border-bottom: 0; }
+  .p-words .body { flex: 1; min-width: 0; }
+  .p-words .wd { font-weight: 600; }
+  .p-words .def { display: block; font-size: 8.5pt; color: #555; line-height: 1.35; }
+  .p-words .def i { color: #888; font-style: italic; }
   .p-words .r { color: #777; width: 7mm; flex: none; font-variant-numeric: tabular-nums; }
   .p-words .mk { width: 4mm; flex: none; font-weight: 700; }
-  .p-words li.miss .wd { color: #777; text-decoration: line-through; }
+  /* A missed word is the one most worth studying, so it stays fully
+     legible. The cross in the margin already marks it. */
+  .p-words li.miss .wd { color: #111; }
+  .p-words li.miss .mk { color: #b03a2e; }
+  .p-words li.saved .mk { color: #8a6d1f; }
   .p-words .pts { margin-left: auto; font-variant-numeric: tabular-nums; }
   #print-sheet .p-foot { margin-top: 8mm; color: #666; font-size: 9pt; border-top: 1px solid #ccc; padding-top: 2mm; }
 }

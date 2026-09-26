@@ -562,6 +562,8 @@
           words.push({
             round: round.round,
             word: entry.word.word,
+            origin: entry.word.origin,
+            definition: entry.word.definition,
             choice: activeChoice(game, entry),
             wagered: !!(game.settings.finalWager && round.round === ROUNDS),
             result: !entryResolved(entry) ? 'unplayed'
