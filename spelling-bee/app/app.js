@@ -73,6 +73,8 @@
     return {
       chooseDifficulty: el('opt-choice').checked,
       secondChance: el('opt-second').checked,
+      finalWager: el('opt-wager').checked,
+      wagerCap: el('opt-wagercap').value,
       lifelines: Math.max(0, parseInt(el('opt-lifelines').value, 10) || 0)
     };
   }
@@ -84,9 +86,12 @@
       field.classList.toggle('hidden', !on);
       field.placeholder = String(readSettings().lifelines);
     }
-    el('perfect-note').textContent =
-      Game.maxPossible({ chooseDifficulty: false }) + ' points, or ' +
-      Game.maxPossible(readSettings()) + ' if you gamble on every word. Ties stand';
+    var s = readSettings();
+    el('opt-wagercap').disabled = !s.finalWager;
+    el('perfect-note').textContent = s.finalWager
+      ? Game.maxPossible(s) + ' at the very most, staking everything on a perfect run. Ties stand'
+      : Game.maxPossible({ chooseDifficulty: false }) + ' points, or ' +
+        Game.maxPossible(s) + ' if you gamble on every word. Ties stand';
   }
 
   function readRoster() {
@@ -209,32 +214,106 @@
     var entry = Game.currentEntry(game);
 
     el('round-no').textContent = 'Round ' + round.round;
-    el('round-pts').textContent = round.points + (round.points === 1 ? ' point' : ' points') + ' a word';
-    el('speller-count').textContent = 'Speller ' + (game.cursor.index + 1) + ' of ' + round.entries.length;
+    var wageredRound = Game.finalWagerRound(game);
+    el('round-pts').textContent = wageredRound
+      ? 'wagered \u2014 you win or lose your stake'
+      : round.points + (round.points === 1 ? ' point' : ' points') + ' a word';
+    el('speller-count').textContent = stage === 'wager'
+      ? '' : 'Speller ' + (game.cursor.index + 1) + ' of ' + round.entries.length;
     var p = Game.progress(game);
     el('progress-bar').style.width = Math.round((p.done / p.total) * 100) + '%';
     el('speller-name').textContent = Game.playerName(game, entry.playerId);
-    el('speller-label').textContent = stage === 'choose' ? 'Choosing'
+    el('speller-label').textContent = stage === 'wager' ? 'The final round \u2014 wagers from'
+      : stage === 'choose' ? 'Choosing'
       : stage === 'second' ? 'Second chance' : 'Now spelling';
+    el('speller-name').textContent = stage === 'wager' ? 'everyone'
+      : Game.playerName(game, entry.playerId);
 
+    show('stage-wager', stage === 'wager');
     show('stage-choose', stage === 'choose');
-    show('word-block', stage !== 'choose');
+    show('word-block', stage !== 'choose' && stage !== 'wager');
     show('lifeline-row', stage === 'spell' && game.settings.lifelines > 0);
     show('judge-row', stage === 'spell');
     show('stage-second', stage === 'second');
     show('verdict', stage === 'judged');
 
-    if (stage === 'choose') renderChoices(round);
+    if (stage === 'wager') renderWagers();
+    else if (stage === 'choose') renderChoices(round);
     else renderWord(round, entry);
     if (stage === 'spell') renderLifelines(entry);
     if (stage === 'second') renderSecondChance(round, entry);
     if (stage === 'judged') renderVerdict(round, entry);
 
     el('btn-undo').disabled = !entry.result && game.cursor.round === 0 && game.cursor.index === 0;
+    show('btn-reopen-wagers', Game.canReopenWagers(game));
     renderKeysHint(stage);
     renderStandings();
     Storage.saveGame(game);
     pushToBoard();
+  }
+
+  function renderWagers() {
+    var catchup = game.settings.wagerCap === 'catchup';
+    el('wager-prompt').textContent = 'Round 8 is wagered. Ask each player what they want to stake, ' +
+      'then lock them in — the amounts stay off the scoreboard until you do, so nobody plays off ' +
+      'anybody else’s number.' + (catchup ? ' Everyone may stake enough to draw level with the leader.' : '');
+
+    var host = el('wager-rows');
+    host.innerHTML = '';
+    Game.wagerBoard(game).forEach(function (row) {
+      var max = Game.maxWager(game, row.id);
+      var line = document.createElement('div');
+      line.className = 'wager-row' + (max === 0 ? ' broke' : '');
+
+      var who = document.createElement('span');
+      who.className = 'who';
+      who.textContent = row.name;
+
+      var banked = document.createElement('span');
+      banked.className = 'banked';
+      banked.textContent = row.banked + (row.banked === 1 ? ' point' : ' points');
+
+      var input = document.createElement('input');
+      input.type = 'number';
+      input.min = '0';
+      input.max = String(max);
+      input.value = row.placed ? String(row.wager) : '';
+      input.placeholder = '—';
+      input.disabled = max === 0;
+      input.addEventListener('input', function () {
+        if (input.value === '') Game.clearWager(game, row.id);
+        else Game.setWager(game, row.id, input.value);
+        Storage.saveGame(game);
+        pushToBoard();                     // status only, never the amount
+      });
+      input.addEventListener('blur', function () {
+        if (input.value !== '') input.value = String(Game.wagerFor(game, row.id));
+      });
+      input.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') { e.preventDefault(); input.blur(); doLockWagers(); }
+      });
+
+      var cap = document.createElement('span');
+      cap.className = 'cap';
+      cap.textContent = max === 0 ? 'nothing to stake' : 'max ' + max;
+
+      var maxBtn = document.createElement('button');
+      maxBtn.type = 'button';
+      maxBtn.className = 'btn-sm btn-max';
+      maxBtn.textContent = 'All in';
+      maxBtn.disabled = max === 0;
+      maxBtn.addEventListener('click', function () {
+        Game.setWager(game, row.id, max);
+        render();
+      });
+
+      line.appendChild(who);
+      line.appendChild(banked);
+      line.appendChild(input);
+      line.appendChild(cap);
+      line.appendChild(maxBtn);
+      host.appendChild(line);
+    });
   }
 
   function renderChoices(round) {
@@ -260,12 +339,20 @@
     var chips = el('chip-row');
     chips.innerHTML = '';
     var picked = Game.activeChoice(game, entry);
-    if (game.settings.chooseDifficulty) {
+    var wagered = Game.finalWagerRound(game) && game.wagersLocked;
+    if (game.settings.chooseDifficulty && !wagered) {
       var chip = document.createElement('span');
       chip.className = 'chip ' + picked;
       chip.textContent = CHOICE_LABELS[picked].name + ' · ' +
         Game.choiceFor(round.round, picked).points + ' pts';
       chips.appendChild(chip);
+    }
+    if (wagered) {
+      var stake = document.createElement('span');
+      stake.className = 'chip stake-chip';
+      var amount = Game.wagerFor(game, entry.playerId);
+      stake.textContent = amount + (amount === 1 ? ' point' : ' points') + ' riding on this';
+      chips.appendChild(stake);
     }
     entry.lifelinesUsed.forEach(function (kind) {
       var used = document.createElement('span');
@@ -344,6 +431,16 @@
   function renderVerdict(round, entry) {
     var points = Game.entryPoints(game, round, entry);
     var who = Game.playerName(game, entry.playerId);
+    if (Game.finalWagerRound(game) && game.wagersLocked) {
+      var won = entry.result === 'correct';
+      el('verdict').className = 'verdict ' + (won ? 'correct' : 'miss');
+      el('verdict-mark').textContent = won ? 'CORRECT' : 'MISSED';
+      el('verdict-note').textContent = points === 0
+        ? who + ' staked nothing, so nothing changes.'
+        : won ? who + ' gains ' + points + (points === 1 ? ' point' : ' points') + '.'
+              : who + ' drops ' + Math.abs(points) + (Math.abs(points) === 1 ? ' point' : ' points') + '.';
+      return;
+    }
     var recovered = entry.second && entry.second.correct;
     var ok = entry.result === 'correct' || recovered;
     el('verdict').className = 'verdict ' + (ok ? 'correct' : 'miss');
@@ -367,6 +464,8 @@
       }
     } else if (stage === 'second') {
       hint = '<kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd> their answer<br><kbd>0</kbd> skip it';
+    } else if (stage === 'wager') {
+      hint = 'type each stake, then<br><kbd>Enter</kbd> lock them in';
     } else {
       hint = '<kbd>Space</kbd> next speller';
     }
@@ -492,13 +591,30 @@
       standings: rows,
       showLifelines: game.settings.lifelines > 0
     };
+    if (stage === 'wager') {
+      // Status only while they are being collected. Revealing an amount early
+      // would let a later player play off an earlier one's number.
+      state.wagerStage = {
+        cap: game.settings.wagerCap,
+        rows: Game.wagerBoard(game).map(function (r) {
+          return { name: r.name, banked: r.banked, placed: r.placed };
+        })
+      };
+    }
+    if (Game.finalWagerRound(game) && game.wagersLocked) {
+      state.finalWagers = Game.wagerBoard(game).map(function (r) {
+        return { name: r.name, banked: r.banked, wager: r.wager };
+      });
+      state.stake = Game.wagerFor(game, entry.playerId);
+    }
     if (stage === 'choose') {
       state.choices = Game.choicesForRound(round.round).map(function (c) {
         return { key: c.key, name: CHOICE_LABELS[c.key].name, sub: CHOICE_LABELS[c.key].sub, points: c.points };
       });
     } else {
       var picked = Game.activeChoice(game, entry);
-      state.choiceMade = game.settings.chooseDifficulty
+      // On the wagered word the round's own point value no longer applies.
+      state.choiceMade = game.settings.chooseDifficulty && !Game.finalWagerRound(game)
         ? { key: picked, name: CHOICE_LABELS[picked].name, points: Game.choiceFor(round.round, picked).points }
         : null;
       state.lifelinesUsed = entry.lifelinesUsed.map(function (k) { return LIFELINE_LABELS[k].name; });
@@ -539,6 +655,10 @@
   });
 
   /* ---------------- actions ---------------- */
+
+  function doLockWagers() {
+    if (Game.lockWagers(game)) render();
+  }
 
   function doChoose(key) {
     if (Game.turnStage(game) !== 'choose') return;
@@ -588,7 +708,7 @@
 
   buildNameInputs();
 
-  ['opt-choice', 'opt-second', 'opt-lifelines'].forEach(function (id) {
+  ['opt-choice', 'opt-second', 'opt-lifelines', 'opt-wager', 'opt-wagercap'].forEach(function (id) {
     el(id).addEventListener('change', syncLifelineFields);
   });
   el('btn-start').addEventListener('click', startGame);
@@ -609,6 +729,14 @@
   el('btn-correct').addEventListener('click', function () { doJudge(true); });
   el('btn-miss').addEventListener('click', function () { doJudge(false); });
   el('btn-skip-second').addEventListener('click', doSkipSecond);
+  el('btn-lock-wagers').addEventListener('click', doLockWagers);
+  el('btn-zero-wagers').addEventListener('click', function () {
+    game.players.forEach(function (p) { Game.setWager(game, p.id, 0); });
+    render();
+  });
+  el('btn-reopen-wagers').addEventListener('click', function () {
+    if (Game.reopenWagers(game)) render();
+  });
   el('btn-next').addEventListener('click', doAdvance);
   el('btn-undo').addEventListener('click', doUndo);
   el('btn-quit').addEventListener('click', quitGame);
@@ -650,6 +778,8 @@
       else if (k >= '1' && k <= '3') { e.preventDefault(); doSecondChance(parseInt(k, 10) - 1); }
     } else if (stage === 'judged') {
       if (k === ' ' || k === 'enter') { e.preventDefault(); doAdvance(); }
+    } else if (stage === 'wager') {
+      if (k === ' ' || k === 'enter') { e.preventDefault(); doLockWagers(); }
     }
   });
 

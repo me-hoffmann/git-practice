@@ -262,3 +262,22 @@ input[type="text"]:focus { outline: 2px solid var(--gold); outline-offset: 1px; 
 .final td.num, .final th.num { text-align: right; font-variant-numeric: tabular-nums; }
 .recap .rlist .saved { color: var(--gold); }
 .recap .rlist .tagline { color: var(--muted); font-size: 13px; margin-left: auto; }
+
+/* ---------- the wagered final round ---------- */
+.wager-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 9px 0; border-bottom: 1px solid var(--line);
+}
+.wager-row:last-of-type { border-bottom: 0; }
+.wager-row .who { flex: 1; font-size: 17px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.wager-row .banked { color: var(--muted); font-size: 14px; font-variant-numeric: tabular-nums; }
+.wager-row input {
+  font: inherit; width: 74px; padding: 7px 8px; text-align: center; font-variant-numeric: tabular-nums;
+  border-radius: 8px; border: 1px solid var(--line); background: #16120f; color: var(--text);
+}
+.wager-row input:focus { outline: 2px solid var(--gold); outline-offset: 1px; }
+.wager-row .cap { color: var(--muted); font-size: 13px; width: 78px; }
+.wager-row .btn-max { padding: 6px 10px; font-size: 13px; }
+.wager-row.broke .cap { color: var(--red); }
+
+.stake-chip { border-color: var(--gold) !important; color: var(--gold) !important; font-weight: 700; }

@@ -77,26 +77,37 @@
     }
 
     el('round-label').innerHTML = 'Round <b>' + state.round + '</b> of ' + state.roundsTotal +
-      ' &nbsp;·&nbsp; speller ' + state.spellerIndex + ' of ' + state.spellerCount;
-    el('worth-label').textContent = state.points + (state.points === 1 ? ' point' : ' points');
+      (wagering ? '' : ' &nbsp;·&nbsp; speller ' + state.spellerIndex + ' of ' + state.spellerCount);
+    var wagered = state.stage === 'wager' || state.finalWagers;
+    el('worth-label').textContent = wagered
+      ? 'Wagered round'
+      : state.points + (state.points === 1 ? ' point' : ' points');
     el('worth-label').classList.remove('hidden');
 
     var choosing = state.stage === 'choose';
-    el('now-label').textContent = choosing ? 'Choosing a word'
+    var wagering = state.stage === 'wager';
+    el('now-label').textContent = wagering ? 'The final round'
+      : choosing ? 'Choosing a word'
       : state.stage === 'second' ? 'Second chance'
       : state.stage === 'judged' ? 'Just spelled' : 'Now spelling';
-    el('now-name').textContent = state.current || '';
+    // A phrase needs less room than a name, or it wraps and pushes the list
+    // off the bottom of a shared screen.
+    el('now-name').textContent = wagering ? 'Place your wagers' : (state.current || '');
+    el('now-name').classList.toggle('phrase', wagering);
     el('on-deck').innerHTML = state.next ? 'Up next &mdash; <b>' + escapeHtml(state.next) + '</b>' : 'Last word of the game';
 
     // Badges: what they chose, what help they spent, and the letter if given.
     var badges = el('badge-row');
     badges.innerHTML = '';
-    if (state.choiceMade) {
+    if (state.choiceMade && !wagering) {
       badges.appendChild(badge(state.choiceMade.name + ' \u00B7 ' + state.choiceMade.points + ' pts', state.choiceMade.key));
+    }
+    if (state.stake !== undefined && state.stake !== null && !wagering) {
+      badges.appendChild(badge(state.stake + (state.stake === 1 ? ' point' : ' points') + ' at stake', 'stake'));
     }
     if (state.firstLetter) badges.appendChild(badge('Starts with ' + state.firstLetter, 'letter'));
     (state.lifelinesUsed || []).forEach(function (name) { badges.appendChild(badge(name)); });
-    if (!choosing && state.showLifelines && state.lifelinesLeft !== null) {
+    if (!choosing && !wagering && state.showLifelines && state.lifelinesLeft !== null) {
       badges.appendChild(badge(state.lifelinesLeft + ' left', ''));
     }
 
@@ -117,6 +128,43 @@
       deck.appendChild(grid);
     }
 
+    /* The wager panel: who has locked in while they are being taken, then
+       every stake once the pronouncer reveals them. */
+    var wagerPanel = el('wager-panel');
+    var wagerRows = el('wager-rows');
+    if (wagering) {
+      el('wager-head').textContent = state.wagerStage.cap === 'catchup'
+        ? 'Stake anything up to what it takes to catch the leader'
+        : 'Stake anything up to what you have';
+      wagerRows.innerHTML = '';
+      state.wagerStage.rows.forEach(function (row) {
+        var li = document.createElement('li');
+        li.className = row.placed ? 'placed' : '';
+        li.innerHTML = '<span class="who">' + escapeHtml(row.name) + '</span>' +
+          '<span class="banked">' + row.banked + ' banked</span>' +
+          (row.placed ? '<span class="stake">locked in</span>' : '<span class="waiting">waiting</span>');
+        wagerRows.appendChild(li);
+      });
+      wagerPanel.classList.remove('hidden');
+    } else if (state.finalWagers) {
+      el('wager-head').textContent = 'Wagers on the final word';
+      wagerRows.innerHTML = '';
+      state.finalWagers.forEach(function (row) {
+        var li = document.createElement('li');
+        li.className = 'revealed';
+        li.innerHTML = '<span class="who">' + escapeHtml(row.name) + '</span>' +
+          '<span class="banked">' + row.banked + ' banked</span>' +
+          '<span class="stake">' + row.wager + '</span>';
+        wagerRows.appendChild(li);
+      });
+      wagerPanel.classList.remove('hidden');
+    } else {
+      wagerPanel.classList.add('hidden');
+    }
+
+    // While wagers are being taken there is no word and nobody is on deck.
+    el('on-deck').classList.toggle('hidden', wagering);
+
     // Second chance: these have to be legible from the speller's sofa.
     var picks = el('pick-list');
     if (state.secondOptions) {
@@ -134,13 +182,19 @@
     }
 
     var reveal = el('reveal');
-    if (state.reveal) {
-      reveal.className = 'reveal ' + (state.reveal.correct ? 'correct' : 'miss');
-      el('reveal-verdict').textContent = state.reveal.correct ? 'CORRECT' : 'MISSED';
+    if (state.reveal && !wagering) {
+      // Recovering a word on the second chance is a save, not a miss. It is
+      // worth half, so it reads as a win on the shared screen.
+      var won = state.reveal.correct || state.reveal.saved;
+      reveal.className = 'reveal ' + (won ? 'correct' : 'miss');
+      el('reveal-verdict').textContent = state.reveal.correct ? 'CORRECT'
+        : state.reveal.saved ? 'SAVED IT' : 'MISSED';
       el('reveal-word').textContent = state.reveal.word;
       el('reveal-caption').textContent = state.reveal.correct
         ? state.reveal.name + ' got it.'
-        : state.reveal.name + ' missed it — that is the spelling.';
+        : state.reveal.saved
+          ? state.reveal.name + ' picked it out of the three — half points.'
+          : state.reveal.name + ' missed it — that is the spelling.';
     } else {
       reveal.className = 'reveal hidden';
     }

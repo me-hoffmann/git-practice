@@ -27,8 +27,9 @@ function check(label, condition, detail) {
 
 const NAMES = ['Mike', 'Dana', 'Ruth', 'Sam', 'Ellie', 'Jo'];
 const blank = () => ({ gameCounter: 0, usedWords: {}, games: [] });
-const CLASSIC = { chooseDifficulty: false, lifelines: 0, secondChance: false };
-const FULL = { chooseDifficulty: true, lifelines: 3, secondChance: true };
+const CLASSIC = { chooseDifficulty: false, lifelines: 0, secondChance: false, finalWager: false };
+const FULL = { chooseDifficulty: true, lifelines: 3, secondChance: true, finalWager: true };
+const NOWAGER = { ...FULL, finalWager: false };
 const newGame = (names = NAMES, settings = FULL, history = blank()) =>
   Game.createGame(names, bank, history, settings).game;
 
@@ -36,7 +37,9 @@ console.log('\nscoring ladder');
 check('rounds 1-2 are worth 1 point', Game.pointsForRound(1) === 1 && Game.pointsForRound(2) === 1);
 check('rounds 7-8 are worth 4', Game.pointsForRound(7) === 4 && Game.pointsForRound(8) === 4);
 check('a classic perfect game is still 20', Game.maxPossible(CLASSIC) === 20, String(Game.maxPossible(CLASSIC)));
-check('gambling every word raises the ceiling to 34', Game.maxPossible(FULL) === 34, String(Game.maxPossible(FULL)));
+check('gambling every word raises the ceiling to 34', Game.maxPossible(NOWAGER) === 34, String(Game.maxPossible(NOWAGER)));
+check('a wagered final round doubles the seven-round best to 60',
+  Game.maxPossible(FULL) === 60, String(Game.maxPossible(FULL)));
 
 console.log('\ndifficulty choice');
 check('round 1 offers no safer option', !Game.choiceFor(1, 'safe').available);
@@ -140,10 +143,15 @@ check('undo steps back to the previous speller',
   Game.undo(U) && U.cursor.index === 0 && Game.turnStage(U) === 'spell');
 
 console.log('\nfull playthrough');
-function playOut(game, pick = () => 'standard', correctRate = 0.6) {
+function playOut(game, pick = () => 'standard', correctRate = 0.6, stake = () => 0.5) {
   let guard = 0;
   while (game.phase === 'playing' && guard++ < 2000) {
     const stage = Game.turnStage(game);
+    if (stage === 'wager') {
+      for (const p of game.players) Game.setWager(game, p.id, Math.round(Game.maxWager(game, p.id) * stake(p)));
+      Game.lockWagers(game);
+      continue;
+    }
     if (stage === 'choose') {
       const round = Game.currentRound(game).round;
       const wanted = pick(game);
@@ -170,9 +178,100 @@ check('gambles are counted', table.some(r => r.gambles > 0));
 const C2 = playOut(newGame(NAMES, CLASSIC), () => 'standard', 1);
 check('a flawless classic game is exactly 20',
   Game.standings(C2).every(r => r.score === 20), JSON.stringify(Game.standings(C2).map(r => r.score)));
-const G2 = playOut(newGame(NAMES, FULL), () => 'risky', 1);
+const G2 = playOut(newGame(NAMES, NOWAGER), () => 'risky', 1);
 check('gambling every word and landing them all is 34',
   Game.standings(G2).every(r => r.score === 34), JSON.stringify(Game.standings(G2).map(r => r.score)));
+const W2 = playOut(newGame(NAMES, FULL), () => 'risky', 1, () => 1);
+check('a flawless game staking everything finishes on 60',
+  Game.standings(W2).every(r => r.score === 60), JSON.stringify(Game.standings(W2).map(r => r.score)));
+
+console.log('\nthe wagered final round');
+function toFinal(settings = FULL, correctRate = 0.7) {
+  const g = newGame(NAMES, settings);
+  let guard = 0;
+  while (Game.turnStage(g) !== 'wager' && g.phase === 'playing' && guard++ < 2000) {
+    const s = Game.turnStage(g);
+    if (s === 'choose') Game.chooseDifficulty(g, 'standard');
+    else if (s === 'spell') Game.judge(g, Math.random() < correctRate, choices);
+    else if (s === 'second') Game.answerSecondChance(g, Math.floor(Math.random() * 3));
+    else if (s === 'judged') Game.advance(g);
+  }
+  return g;
+}
+const F = toFinal();
+check('the wager step opens once round 7 is done', Game.turnStage(F) === 'wager');
+check('it opens on round 8', F.cursor.round === Game.ROUNDS - 1);
+const anyone = F.players[0];
+const banked = Game.maxWager(F, anyone.id);
+check('the cap is what the player banked in rounds 1-7',
+  banked === Game.scoreBeforeFinal(F, anyone.id));
+check('a wager over the cap is trimmed to it', Game.setWager(F, anyone.id, banked + 99) === banked);
+check('a negative wager becomes zero', Game.setWager(F, anyone.id, -5) === 0);
+check('play is blocked until wagers are locked', Game.turnStage(F) === 'wager');
+check('the board lists the leader first',
+  Game.wagerBoard(F)[0].banked >= Game.wagerBoard(F)[1].banked);
+F.players.forEach(p => Game.setWager(F, p.id, Game.maxWager(F, p.id)));
+check('locking moves play on', Game.lockWagers(F) && Game.turnStage(F) === 'spell');
+check('no difficulty choice on the wagered word', Game.turnStage(F) !== 'choose');
+
+const stakeEntry = Game.currentEntry(F);
+const staker = stakeEntry.playerId;
+const stake = Game.wagerFor(F, staker);
+const before = Game.scoreBeforeFinal(F, staker);
+Game.judge(F, true, choices);
+check('landing it adds the stake',
+  Game.entryPoints(F, Game.currentRound(F), stakeEntry) === stake);
+check('an all-in win doubles the score',
+  Game.standings(F).find(r => r.id === staker).score === before * 2, `${before} -> ${Game.standings(F).find(r => r.id === staker).score}`);
+Game.undo(F);
+Game.judge(F, false, choices);
+check('no second chance is offered on the wagered word', Game.turnStage(F) === 'judged');
+check('missing it subtracts the stake',
+  Game.entryPoints(F, Game.currentRound(F), stakeEntry) === -stake);
+check('an all-in loss lands on zero, never below',
+  Game.standings(F).find(r => r.id === staker).score === 0);
+
+const R = toFinal();
+R.players.forEach(p => Game.setWager(R, p.id, 1));
+Game.lockWagers(R);
+check('wagers can be reopened before the final word is judged', Game.canReopenWagers(R) && Game.reopenWagers(R));
+Game.lockWagers(R);
+Game.judge(R, true, choices);
+check('and not after', !Game.canReopenWagers(R));
+
+const WU = toFinal();
+WU.players.forEach(p => Game.setWager(WU, p.id, Game.maxWager(WU, p.id)));
+Game.lockWagers(WU);
+Game.undo(WU);            // step back into round 7
+Game.undo(WU);            // clear that ruling, changing a banked score
+while (Game.turnStage(WU) !== 'wager' && WU.phase === 'playing') {
+  const s = Game.turnStage(WU);
+  if (s === 'spell') Game.judge(WU, false, choices);
+  else if (s === 'second') Game.answerSecondChance(WU, 0);
+  else if (s === 'judged') Game.advance(WU);
+  else if (s === 'choose') Game.chooseDifficulty(WU, 'standard');
+}
+check('a score change after locking reopens the wagers', Game.turnStage(WU) === 'wager');
+
+const CATCH = toFinal({ ...FULL, wagerCap: 'catchup' });
+const cBoard = Game.wagerBoard(CATCH);
+const cLeader = cBoard[0], cTrailer = cBoard[cBoard.length - 1];
+check('under the catch-up limit the leader is unchanged',
+  Game.maxWager(CATCH, cLeader.id) === cLeader.banked);
+check('the last-placed player may stake enough to draw level',
+  cTrailer.banked + Game.maxWager(CATCH, cTrailer.id) >= cLeader.banked,
+  `${cTrailer.banked} + ${Game.maxWager(CATCH, cTrailer.id)} vs ${cLeader.banked}`);
+Game.setWager(CATCH, cTrailer.id, Game.maxWager(CATCH, cTrailer.id));
+CATCH.players.forEach(p => { if (!Game.wagerSet(CATCH, p.id)) Game.setWager(CATCH, p.id, 0); });
+Game.lockWagers(CATCH);
+while (Game.currentEntry(CATCH).playerId !== cTrailer.id) { Game.judge(CATCH, true, choices); Game.advance(CATCH); }
+Game.judge(CATCH, false, choices);
+check('and an overreaching loss still bottoms out at zero',
+  Game.standings(CATCH).find(r => r.id === cTrailer.id).score === 0);
+
+const NW = playOut(newGame(NAMES, NOWAGER), () => 'standard', 0.7);
+check('with wagering off round 8 scores normally', NW.phase === 'done');
+check('and nobody can exceed 34', Game.standings(NW).every(r => r.score <= 34));
 
 console.log('\nties');
 const T = playOut(newGame(['A', 'B', 'C'], CLASSIC), () => 'standard', 1);

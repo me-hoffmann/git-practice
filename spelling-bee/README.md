@@ -21,7 +21,11 @@ To put it online instead, serve the `app/` folder from anywhere static
 - **Nobody is eliminated.** Everyone plays to the end. You earn points for the
   words you get right instead of surviving the ones you get wrong.
 - **Points escalate.** Rounds 1-2 are worth 1 point, rounds 3-4 are worth 2,
-  rounds 5-6 are worth 3, rounds 7-8 are worth 4. A perfect game is 20 points.
+  rounds 5-6 are worth 3, rounds 7-8 are worth 4. A flawless classic game is 20
+  points; 34 gambling on every word; 60 also staking it all on the last one.
+- **Round 8 is wagered.** Before it starts, every player stakes some of what
+  they have banked. Land the word and the stake is added; miss it and it comes
+  off. No second chances on that one.
 - **Most points wins. Ties stand** - no tiebreaker rounds.
 - Up to 10 players. Speller order is randomized fresh each round.
 - No late joiners once a game has started.
@@ -59,7 +63,33 @@ challenge.
 of them right, worth half the points rounded up. Almost nobody leaves a round
 with nothing. The decoys are generated from the trap the word is built around,
 so *separate* offers **seperate**, *occurrence* offers **occurrance**, and
-*grammar* offers **gramar**.
+*grammar* offers **gramar**. Recovering one reads as **SAVED IT** on the shared
+screen, not as a miss.
+
+## The wagered final round
+
+Between round 7 and round 8 the pronouncer collects a stake from every player.
+Amounts stay off the scoreboard until they are all in and locked, so nobody
+plays off somebody else's number; then every stake is revealed and stays on
+screen for the rest of the round. Landing the word adds the stake, missing it
+takes it off, and a loss never costs more than the player actually holds - so
+nobody finishes below zero. The difficulty choice steps aside for that word,
+because the wager should be the only decision left.
+
+Two limits are available at setup.
+
+| Limit | A player may stake | What it does |
+| --- | --- | --- |
+| **what the player has** *(default)* | up to their own banked score | the classic rule. A player below half the leader's score has no arithmetic path to winning |
+| **enough to catch the leader** | their own score, or the gap to the leader, whichever is larger | keeps the whole table mathematically alive into the last word |
+
+Over 1,000 simulated games with five strong spellers and five weak ones, the
+wager changes who wins **about one game in five** - and close to every game
+when the leader plays safe and the chasers go all in. What it does *not* do is
+manufacture a win for somebody far behind: a weaker speller still took the
+title in roughly 1 game in 1,000 under either limit, because winning the last
+word still means spelling a round 8 word correctly. The wager makes the finish
+genuinely tense among the contenders; it is not a handicap.
 
 Two further ideas need no code at all: play in **pairs**, entering the team as
 one name, which removes the solo spotlight and halves the runtime; and hand out
@@ -77,6 +107,7 @@ one name, which removes the solo spotlight and halves the runtime; and hand out
 | Difficulty anchors | Round 1 = *rhythm*, Round 8 = *eudaemonic* |
 | Player stats over time | Deferred, but the data model is designed for it now |
 | Mixed-ability play | Speller-chosen difficulty, lifelines and a second chance, all optional |
+| Final round | Wagered, Final Jeopardy style, with two limit rules |
 | Variant spellings | American only. British forms are rejected by the validator |
 | Round 1 floor | Confirmed at *rhythm* level - round 1 is not a freebie |
 
@@ -193,6 +224,7 @@ missed, pick from three spellings. The keyboard follows whichever step is open:
 | Key | Does |
 | --- | --- |
 | <kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd> | choosing: pick the difficulty &nbsp;/&nbsp; second chance: the answer they called |
+| <kbd>Enter</kbd> | wagers: lock them all in |
 | <kbd>C</kbd> / <kbd>X</kbd> | correct / missed |
 | <kbd>L</kbd> <kbd>T</kbd> <kbd>P</kbd> | spend a lifeline: letter, table, pass |
 | <kbd>0</kbd> | skip the second chance |
@@ -246,7 +278,8 @@ node tools/validate.mjs && node tools/build-wordbank.mjs
 It also reports how many repeat-free games the current bank supports.
 
 `test-game.mjs` covers the rules rather than the pixels: the points ladder, a
-perfect game of 20, tie handling, undo across round boundaries, word swapping,
+perfect game of 20, tie handling, undo across round boundaries, the wager
+limits and their edges, word swapping,
 and - the one that actually matters - that twenty consecutive ten-player games
 never repeat a single word. That last check exhausts all 1,600.
 
